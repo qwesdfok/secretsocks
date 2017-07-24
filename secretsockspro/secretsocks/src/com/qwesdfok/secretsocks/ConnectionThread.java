@@ -140,8 +140,27 @@ public class ConnectionThread extends Thread
 			if (cmd == 0x1)
 			{
 				//CONNECT请求
-				Socket outSocket = new Socket(addr, port);
-				inCipherStream.write(generateReplyData(outSocket.getLocalAddress().getAddress(), outSocket.getLocalPort()));
+				Socket outSocket;
+				try
+				{
+					outSocket = new Socket(addr, port);
+				} catch (ConnectException e)
+				{
+					if (e.getLocalizedMessage().contains("refused"))
+					{
+						inCipherStream.write(generateReplyData(addr.getAddress(), (byte) 0x05, port));
+						inCipherStream.flush();
+						Log.infoLog(e.getLocalizedMessage());
+					} else if (e.getLocalizedMessage().contains("time out"))
+					{
+						inCipherStream.write(generateReplyData(addr.getAddress(), (byte) 0x03, port));
+						inCipherStream.flush();
+						Log.infoLog(e.getLocalizedMessage());
+					}
+					inCipherStream.close();
+					return;
+				}
+				inCipherStream.write(generateReplyData(outSocket.getLocalAddress().getAddress(), (byte) 0x00, outSocket.getLocalPort()));
 				inCipherStream.flush();
 				outInputStream = new BufferedInputStream(outSocket.getInputStream());
 				outOutputStream = new BufferedOutputStream(outSocket.getOutputStream());
@@ -161,10 +180,29 @@ public class ConnectionThread extends Thread
 			{
 				//BIND请求
 				ServerSocket serverSocket = new ServerSocket(0);
-				inCipherStream.write(generateReplyData(serverSocket.getInetAddress().getAddress(), serverSocket.getLocalPort()));
+				inCipherStream.write(generateReplyData(serverSocket.getInetAddress().getAddress(), (byte) 0x00, serverSocket.getLocalPort()));
 				inCipherStream.flush();
-				Socket outSocket = serverSocket.accept();
-				inCipherStream.write(generateReplyData(outSocket.getInetAddress().getAddress(), outSocket.getPort()));
+				Socket outSocket;
+				try
+				{
+					outSocket = serverSocket.accept();
+				} catch (ConnectException e)
+				{
+					if (e.getLocalizedMessage().contains("refused"))
+					{
+						inCipherStream.write(generateReplyData(serverSocket.getInetAddress().getAddress(), (byte) 0x05, serverSocket.getLocalPort()));
+						inCipherStream.flush();
+						Log.infoLog(e.getLocalizedMessage());
+					} else if (e.getLocalizedMessage().contains("time out"))
+					{
+						inCipherStream.write(generateReplyData(serverSocket.getInetAddress().getAddress(), (byte) 0x03, serverSocket.getLocalPort()));
+						inCipherStream.flush();
+						Log.infoLog(e.getLocalizedMessage());
+					}
+					inCipherStream.close();
+					return;
+				}
+				inCipherStream.write(generateReplyData(outSocket.getInetAddress().getAddress(), (byte) 0x00, outSocket.getPort()));
 				outInputStream = new BufferedInputStream(outSocket.getInputStream());
 				outOutputStream = new BufferedOutputStream(outSocket.getOutputStream());
 				receiveDataThread = new ReceiveDataThread();
@@ -183,7 +221,7 @@ public class ConnectionThread extends Thread
 			{
 				//UDP请求
 				DatagramSocket datagramSocket = new DatagramSocket(0);
-				inCipherStream.write(generateReplyData(datagramSocket.getLocalAddress().getAddress(), datagramSocket.getPort()));
+				inCipherStream.write(generateReplyData(datagramSocket.getLocalAddress().getAddress(), (byte) 0x00, datagramSocket.getPort()));
 				inCipherStream.flush();
 				udpReceiveDataThread = new UDPReceiveDataThread(datagramSocket);
 				udpReceiveDataThread.start();
@@ -204,18 +242,18 @@ public class ConnectionThread extends Thread
 		}
 	}
 
-	private byte[] generateReplyData(byte[] address, int port)
+	private byte[] generateReplyData(byte[] address, byte rep, int port)
 	{
 		byte[] portByte = new byte[]{(byte) ((port & 0xff00) >>> 8), (byte) ((port & 0xff))};
 		if (address.length == 4)
 		{
-			return new byte[]{0x05, 0x00, 0x00, 0x01, address[0], address[1], address[2], address[3], portByte[0], portByte[1]};
+			return new byte[]{0x05, rep, 0x00, 0x01, address[0], address[1], address[2], address[3], portByte[0], portByte[1]};
 		} else if (address.length == 16)
 		{
-			return new byte[]{0x05, 0x00, 0x00, 0x04, address[0], address[1], address[2], address[3], address[4],
+			return new byte[]{0x05, rep, 0x00, 0x04, address[0], address[1], address[2], address[3], address[4],
 					address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13],
 					address[14], address[15], portByte[0], portByte[1]};
 		} else
-			return new byte[]{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+			return new byte[]{0x05, rep, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	}
 }
