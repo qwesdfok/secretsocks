@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../../QUtils/QUtils.iml" filepath="$PROJECT_DIR$/../../QUtils/QUtils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../secretclient/secretclient.iml" filepath="$PROJECT_DIR$/../secretclient/secretclient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/secretsocks.iml" filepath="$PROJECT_DIR$/secretsocks.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../secretsockscommon/secretsockscommon.iml" filepath="$PROJECT_DIR$/../secretsockscommon/secretsockscommon.iml" />
+    </modules>
+  </component>
+</project>
