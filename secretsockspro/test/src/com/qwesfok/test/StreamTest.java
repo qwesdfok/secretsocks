@@ -1,4 +1,4 @@
-package test;
+package com.qwesfok.test;
 
 import com.qwesdfok.common.AESBlock128Cipher;
 import com.qwesdfok.common.CipherByteStream;
