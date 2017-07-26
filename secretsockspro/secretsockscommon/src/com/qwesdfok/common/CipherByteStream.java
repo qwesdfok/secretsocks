@@ -114,6 +114,12 @@ public class CipherByteStream implements CipherByteStreamInterface
 	}
 
 	@Override
+	public Socket getSocket()
+	{
+		return socket;
+	}
+
+	@Override
 	public byte[] read() throws IOException, GeneralSecurityException
 	{
 		synchronized (inputStream)

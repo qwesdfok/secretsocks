@@ -1,9 +1,10 @@
 package com.qwesdfok.secretsocks;
 
-import com.qwesdfok.common.ConnectionInfo;
+import com.qwesdfok.common.*;
 import com.qwesdfok.pretend.PolicyManager;
 import com.qwesdfok.pretend.PretendListener;
 
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -15,10 +16,12 @@ public class MainService
 	{
 		try
 		{
-			ConnectionInfo connectionInfo = new ConnectionInfo("127.0.0.1", 9999, "AES-128", "qwesdfok", "qwesdfok");
-			ServerConfig serverConfig = new ServerConfig();
-			serverConfig.bufferSize = 1024 * 1024;
-			ServerSocket serverSocket = new ServerSocket(9999);
+			KeyInfo keyInfo = new KeyInfo("AES-128", "XOR", "qwesdfok", "qwesdfok");
+			ServerConfig serverConfig = new ServerConfig(null, 9999, 1024 * 1024);
+			InetAddress address = null;
+			if (serverConfig.listenAddress != null)
+				address = InetAddress.getByName(serverConfig.listenAddress);
+			ServerSocket serverSocket = new ServerSocket(serverConfig.port, 0, address);
 			PolicyManager policyManager = new PolicyManager();
 			List<PretendListener> pretendListenerList = new ArrayList<>();
 			while (true)
@@ -29,7 +32,10 @@ public class MainService
 					policyManager.startServer(inSocket);
 					continue;
 				}
-				ConnectionThread connectionThread = new ConnectionThread(inSocket, connectionInfo, serverConfig, pretendListenerList, policyManager);
+				CipherByteStreamInterface inCipherStream = new CipherByteStream(inSocket,
+						new AESBlock128Cipher(keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						new XORByteCipher(keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()), serverConfig.bufferSize);
+				ConnectionThread connectionThread = new ConnectionThread(inCipherStream, pretendListenerList, policyManager);
 				connectionThread.start();
 			}
 		} catch (Exception e)

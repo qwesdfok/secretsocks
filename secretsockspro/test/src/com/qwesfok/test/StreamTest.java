@@ -6,6 +6,7 @@ import com.qwesdfok.common.XORByteCipher;
 import com.qwesdfok.utils.QUtils;
 import org.testng.annotations.Test;
 
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -33,7 +34,7 @@ public class StreamTest
 	{
 		try
 		{
-			ServerSocket serverSocket = new ServerSocket(6666);
+			ServerSocket serverSocket = new ServerSocket(6666,0, InetAddress.getByName("0.0.0.0"));
 			Socket socket = serverSocket.accept();
 			CipherByteStream stream = new CipherByteStream(socket, new AESBlock128Cipher("qwesdfok".getBytes()), new XORByteCipher("qwesdfok".getBytes()), 64);
 			byte[] data = stream.read();

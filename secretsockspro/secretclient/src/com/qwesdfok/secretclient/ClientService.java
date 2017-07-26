@@ -1,6 +1,6 @@
 package com.qwesdfok.secretclient;
 
-import com.qwesdfok.common.ConnectionInfo;
+import com.qwesdfok.common.*;
 import com.qwesdfok.utils.QUtils;
 
 import java.net.ServerSocket;
@@ -10,17 +10,19 @@ public class ClientService
 {
 	public static void main(String[] argv)
 	{
-		ConnectionInfo connectionInfo = new ConnectionInfo("127.0.0.1", 9999, "AES-128", "qwesdfok", "qwesdfok");
-		ClientConfig clientConfig = new ClientConfig();
-		clientConfig.bufferSize = 1024*1024;
+		KeyInfo keyInfo = new KeyInfo("AES-128", "XOR", "qwesdfok", "qwesdfok");
+		ClientConfig clientConfig = new ClientConfig("127.0.0.1", 9999, 1024 * 1024);
 		try
 		{
 			ServerSocket serverSocket = new ServerSocket(8888);
 			while (true)
 			{
 				Socket inSocket = serverSocket.accept();
-				Socket outSocket = new Socket(connectionInfo.address, connectionInfo.port);
-				PipeThread pipeThread = new PipeThread(inSocket, outSocket, connectionInfo, clientConfig);
+				Socket outSocket = new Socket(clientConfig.host, clientConfig.port);
+				CipherByteStreamInterface outCipherStream = new CipherByteStream(outSocket,
+						new AESBlock128Cipher(keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						new XORByteCipher(keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()), clientConfig.bufferSize);
+				PipeThread pipeThread = new PipeThread(inSocket, outCipherStream);
 				pipeThread.start();
 			}
 		} catch (Exception e)

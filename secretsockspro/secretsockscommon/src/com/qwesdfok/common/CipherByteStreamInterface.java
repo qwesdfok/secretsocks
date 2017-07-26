@@ -1,10 +1,13 @@
 package com.qwesdfok.common;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.security.GeneralSecurityException;
 
 public interface CipherByteStreamInterface
 {
+	Socket getSocket();
+
 	byte[] read() throws IOException, GeneralSecurityException;
 
 	void write(byte[] data) throws IOException, GeneralSecurityException;

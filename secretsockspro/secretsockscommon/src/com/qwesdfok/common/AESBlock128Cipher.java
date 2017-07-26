@@ -8,8 +8,8 @@ import java.security.SecureRandom;
 
 public class AESBlock128Cipher implements BlockCipherInterface
 {
-	private byte[] decryptPassword;
-	private byte[] encryptPassword;
+	private final byte[] decryptPassword;
+	private final byte[] encryptPassword;
 	private Cipher decryptCipher;
 	private Cipher encryptCipher;
 
@@ -48,5 +48,20 @@ public class AESBlock128Cipher implements BlockCipherInterface
 	public byte[] encrypt(byte[] plain, int offset, int length) throws BadPaddingException, IllegalBlockSizeException
 	{
 		return encryptCipher.doFinal(plain, offset, length);
+	}
+
+	@Override
+	public AESBlock128Cipher clone()
+	{
+		try
+		{
+			Object object = super.clone();
+			AESBlock128Cipher cipher = ((AESBlock128Cipher) object);
+			cipher.init();
+			return cipher;
+		} catch (CloneNotSupportedException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e)
+		{
+			return null;
+		}
 	}
 }

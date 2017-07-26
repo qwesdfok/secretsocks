@@ -28,4 +28,16 @@ public class NoCipher implements BlockCipherInterface
 		System.arraycopy(plain, offset, data, 0, length);
 		return data;
 	}
+
+	@Override
+	public BlockCipherInterface clone()
+	{
+		try
+		{
+			return ((NoCipher) super.clone());
+		} catch (CloneNotSupportedException e)
+		{
+			return null;
+		}
+	}
 }

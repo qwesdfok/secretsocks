@@ -16,7 +16,7 @@ import java.util.List;
 public class ConnectionThread extends Thread
 {
 	private static final int buffer_size = 1024;
-	private static int thread_id = 0;
+	private static int thrad_count = 0;
 
 	private class ReceiveDataThread extends Thread
 	{
@@ -81,24 +81,21 @@ public class ConnectionThread extends Thread
 	private Socket inSocket;
 	private ReceiveDataThread receiveDataThread;
 	private UDPReceiveDataThread udpReceiveDataThread;
-	private CipherByteStream inCipherStream;
+	private CipherByteStreamInterface inCipherStream;
 	private BufferedInputStream outInputStream;
 	private BufferedOutputStream outOutputStream;
-	private ConnectionInfo connectionInfo;
-	private ServerConfig serverConfig;
 	private PolicyManager policyManager;
 	private List<PretendListener> pretendListenerList;
-	private final int id;
+	private final int threadId;
 
 
-	public ConnectionThread(Socket inSocket, ConnectionInfo connectionInfo, ServerConfig serverConfig, List<PretendListener> pretendListeners, PolicyManager policyManager)
+	public ConnectionThread(CipherByteStreamInterface cipherByteStream, List<PretendListener> pretendListeners, PolicyManager policyManager)
 	{
-		super("" + thread_id);
-		id = thread_id;
-		thread_id++;
-		this.inSocket = inSocket;
-		this.connectionInfo = connectionInfo;
-		this.serverConfig = serverConfig;
+		super("ServerThread_" + thrad_count);
+		threadId = thrad_count;
+		thrad_count++;
+		this.inSocket = cipherByteStream.getSocket();
+		this.inCipherStream = cipherByteStream;
 		this.policyManager = policyManager;
 		this.pretendListenerList = pretendListeners;
 	}
@@ -108,10 +105,6 @@ public class ConnectionThread extends Thread
 	{
 		try
 		{
-			inCipherStream = new CipherByteStream(inSocket,
-					new AESBlock128Cipher(connectionInfo.readKey.getBytes(), connectionInfo.writeKey.getBytes()),
-					new XORByteCipher(connectionInfo.readKey.getBytes(), connectionInfo.writeKey.getBytes()), serverConfig.bufferSize);
-
 			//协商验证方式
 			byte[] data = inCipherStream.read();
 			callBeforeContactListener(data, 0, data.length);

@@ -39,4 +39,18 @@ public class XORByteCipher implements ByteCipherInterface
 	{
 		return (byte) (plain ^ ((byte) encryptRandom.nextInt()));
 	}
+
+	@Override
+	public ByteCipherInterface clone()
+	{
+		try
+		{
+			XORByteCipher cipher = ((XORByteCipher) super.clone());
+			cipher.init();
+			return cipher;
+		} catch (Exception e)
+		{
+			return null;
+		}
+	}
 }

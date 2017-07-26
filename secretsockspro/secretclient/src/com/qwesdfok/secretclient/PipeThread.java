@@ -1,9 +1,6 @@
 package com.qwesdfok.secretclient;
 
-import com.qwesdfok.common.AESBlock128Cipher;
-import com.qwesdfok.common.CipherByteStream;
-import com.qwesdfok.common.ConnectionInfo;
-import com.qwesdfok.common.XORByteCipher;
+import com.qwesdfok.common.CipherByteStreamInterface;
 import com.qwesdfok.utils.QUtils;
 
 import java.io.BufferedInputStream;
@@ -50,26 +47,21 @@ public class PipeThread extends Thread
 	}
 
 	private Socket inSocket;
-	private Socket outSocket;
-	private ConnectionInfo connectionInfo;
-	private ClientConfig clientConfig;
 	private ReceiveDataThread receiveDataThread;
 	private InputStream inInputStream;
 	private OutputStream inOutputStream;
-	private CipherByteStream outCipherStream;
+	private CipherByteStreamInterface outCipherStream;
 	private final int threadId;
 	private int phase = 0;
 
 
-	public PipeThread(Socket inSocket, Socket outSocket, ConnectionInfo connectionInfo, ClientConfig clientConfig)
+	public PipeThread(Socket inSocket, CipherByteStreamInterface cipherByteStream)
 	{
 		super("clientThread_" + thread_count);
 		threadId = thread_count;
 		thread_count++;
 		this.inSocket = inSocket;
-		this.outSocket = outSocket;
-		this.connectionInfo = connectionInfo;
-		this.clientConfig = clientConfig;
+		this.outCipherStream = cipherByteStream;
 	}
 
 	@Override
@@ -79,9 +71,7 @@ public class PipeThread extends Thread
 		{
 			inInputStream = new BufferedInputStream(inSocket.getInputStream());
 			inOutputStream = new BufferedOutputStream(inSocket.getOutputStream());
-			outCipherStream = new CipherByteStream(outSocket,
-					new AESBlock128Cipher(connectionInfo.readKey.getBytes(), connectionInfo.writeKey.getBytes()),
-					new XORByteCipher(connectionInfo.readKey.getBytes(), connectionInfo.writeKey.getBytes()), clientConfig.bufferSize);
+
 			receiveDataThread = new ReceiveDataThread();
 			receiveDataThread.start();
 			byte[] buffer = new byte[buffer_size];
