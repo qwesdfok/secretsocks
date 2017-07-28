@@ -4,8 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../../QUtils/QUtils.iml" filepath="$PROJECT_DIR$/../../QUtils/QUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/../secretclient/secretclient.iml" filepath="$PROJECT_DIR$/../secretclient/secretclient.iml" />
-      <module fileurl="file://$PROJECT_DIR$/secretsocks.iml" filepath="$PROJECT_DIR$/secretsocks.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/secretsocks.iml" filepath="$PROJECT_DIR$/.idea/secretsocks.iml" />
       <module fileurl="file://$PROJECT_DIR$/../secretsockscommon/secretsockscommon.iml" filepath="$PROJECT_DIR$/../secretsockscommon/secretsockscommon.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../test/test.iml" filepath="$PROJECT_DIR$/../test/test.iml" />
     </modules>
   </component>
 </project>

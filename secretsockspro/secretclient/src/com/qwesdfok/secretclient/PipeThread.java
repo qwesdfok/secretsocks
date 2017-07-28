@@ -1,12 +1,10 @@
 package com.qwesdfok.secretclient;
 
 import com.qwesdfok.common.CipherByteStreamInterface;
+import com.qwesdfok.utils.Log;
 import com.qwesdfok.utils.QUtils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 
@@ -15,9 +13,19 @@ public class PipeThread extends Thread
 {
 	private static final int buffer_size = 1024;
 	private static int thread_count = 0;
+	private static int receive_thread_count = 0;
 
 	private class ReceiveDataThread extends Thread
 	{
+		private final int receiveThreadId;
+
+		public ReceiveDataThread()
+		{
+			super("ReceiveThread_" + receive_thread_count);
+			receiveThreadId = receive_thread_count;
+			receive_thread_count++;
+		}
+
 		@Override
 		public void run()
 		{
@@ -31,6 +39,7 @@ public class PipeThread extends Thread
 						data = outCipherStream.read();
 					} catch (SocketException e)
 					{
+						Log.infoLog("ReceiveThreadId:" + receiveThreadId + " c<-s closed");
 						break;
 					}
 					if (data == null)
@@ -42,6 +51,9 @@ public class PipeThread extends Thread
 			} catch (Exception e)
 			{
 				QUtils.printException(e);
+			} finally
+			{
+				closeAll();
 			}
 		}
 	}
@@ -82,14 +94,45 @@ public class PipeThread extends Thread
 				outCipherStream.write(buffer, 0, length);
 				outCipherStream.flush();
 //				Log.infoLog(threadId + "->c->:" + QUtils.byteToHexStr(buffer, 0, length));
-				length = inInputStream.read(buffer);
+				try
+				{
+					length = inInputStream.read(buffer);
+				} catch (IOException e)
+				{
+					Log.infoLog("ThreadId:" + threadId + " b->c closed");
+					break;
+				}
 			}
-			inOutputStream.close();
-			inInputStream.close();
-			outCipherStream.close();
 		} catch (Exception e)
 		{
 			QUtils.printException(e);
+		} finally
+		{
+			closeAll();
+		}
+	}
+
+	private void closeAll()
+	{
+		if (inSocket != null && !inSocket.isClosed())
+		{
+			try
+			{
+				inSocket.close();
+			} catch (IOException e)
+			{
+				//ignore
+			}
+		}
+		if (outCipherStream != null && outCipherStream.getSocket() != null && !outCipherStream.getSocket().isClosed())
+		{
+			try
+			{
+				outCipherStream.close();
+			} catch (IOException e)
+			{
+				//ignore
+			}
 		}
 	}
 }

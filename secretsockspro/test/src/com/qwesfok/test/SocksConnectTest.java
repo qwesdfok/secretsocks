@@ -1,6 +1,13 @@
 package com.qwesfok.test;
 
 import com.qwesdfok.pretend.PretendPolicy;
+import net.codestory.http.Context;
+import net.codestory.http.Query;
+import net.codestory.http.WebServer;
+import net.codestory.http.annotations.Get;
+import net.codestory.http.annotations.Post;
+import net.codestory.http.annotations.Prefix;
+import net.codestory.http.payload.Payload;
 import org.testng.annotations.Test;
 
 import java.io.BufferedInputStream;
@@ -8,7 +15,7 @@ import java.io.BufferedOutputStream;
 import java.net.Socket;
 import java.util.TreeSet;
 
-public class DataTest
+public class SocksConnectTest
 {
 	@Test
 	public void connect()
@@ -49,6 +56,33 @@ public class DataTest
 		for (PretendPolicy policy : treeSet)
 		{
 			System.out.println(policy.priority);
+		}
+	}
+
+	@Test
+	public void httpServerTest() throws InterruptedException
+	{
+		WebServer webServer = new WebServer().configure(routes -> routes.add(new PretendServer()));
+		webServer.start(9090);
+		while (true)
+		{
+			Thread.sleep(100);
+		}
+	}
+
+	@Prefix("/")
+	static class PretendServer
+	{
+		@Get("/")
+		public Payload get()
+		{
+			return new Payload("<h1>Hello<h1><form action='login' method='post'><div><input type=text' name='userName'/></div><div><input type='password' name='password'/></div><div><input type='submit' value='Submit'/></div></form>");
+		}
+
+		@Post("/login")
+		public Payload post(Context context, Query query)
+		{
+			return new Payload("<h1>Permission Denied<h1><div>Invalid userName(" + query.get("userName") + ") or password<div>");
 		}
 	}
 }

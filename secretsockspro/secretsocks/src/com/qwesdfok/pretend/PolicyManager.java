@@ -85,13 +85,14 @@ public class PolicyManager
 		return fetchPolicyByIp(ip) != null;
 	}
 
-	public void startServer(Socket socket) throws IOException
+	public void startServer(Socket socket) throws IOException, PretendException
 	{
 		String ip = socket.getInetAddress().getHostAddress();
 		PretendPolicy policy = fetchPolicyByIp(ip);
 		if (policy == null)
 			return;
-		policy.pretendServer.pretend(socket, ListenerInterface.TriggerType.BEFORE_CONTACT, this);
+		policy.pretendServer.pretend(socket, EventListenerInterface.TriggerType.BEFORE_CONTACT, this, null, 0, 0);
+		throw new PretendException("Policy denied :" + socket.getRemoteSocketAddress());
 	}
 
 	public void configPriority(String policyName, int priority)
@@ -99,13 +100,13 @@ public class PolicyManager
 		readWriteLock.writeLock().lock();
 		try
 		{
-			if(!policyMap.containsKey(policyName))
+			if (!policyMap.containsKey(policyName))
 				return;
-			PretendPolicy policy=policyMap.get(policyName);
+			PretendPolicy policy = policyMap.get(policyName);
 			prioritySet.remove(policy);
 			policy.priority = priority;
 			prioritySet.add(policy);
-		}finally
+		} finally
 		{
 			readWriteLock.writeLock().unlock();
 		}
@@ -113,7 +114,7 @@ public class PolicyManager
 
 	private PretendPolicy fetchPolicyByIp(String ip)
 	{
-		readWriteLock.readLock();
+		readWriteLock.readLock().lock();
 		try
 		{
 			Pattern pattern;

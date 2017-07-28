@@ -12,5 +12,7 @@
     <orderEntry type="module" module-name="secretsocks" />
     <orderEntry type="module" module-name="secretsockscommon" />
     <orderEntry type="library" name="testng" level="application" />
+    <orderEntry type="library" name="fluent-http" level="application" />
+    <orderEntry type="library" name="httpclient" level="application" />
   </component>
 </module>

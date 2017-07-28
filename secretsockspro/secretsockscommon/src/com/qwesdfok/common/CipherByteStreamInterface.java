@@ -8,6 +8,8 @@ public interface CipherByteStreamInterface
 {
 	Socket getSocket();
 
+	byte[] look() throws IOException;
+
 	byte[] read() throws IOException, GeneralSecurityException;
 
 	void write(byte[] data) throws IOException, GeneralSecurityException;
@@ -17,4 +19,6 @@ public interface CipherByteStreamInterface
 	void flush() throws IOException;
 
 	void close() throws IOException;
+
+	boolean isClosed();
 }

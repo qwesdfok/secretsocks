@@ -5,6 +5,7 @@ import java.util.Comparator;
 public class PretendPolicy implements Comparable<PretendPolicy>
 {
 	public String name = "";
+	public String[] ipAddress;
 	public String[] ipFilter;
 	public PretendServerInterface pretendServer;
 	public boolean enabled = true;
@@ -26,15 +27,6 @@ public class PretendPolicy implements Comparable<PretendPolicy>
 	{
 	}
 
-	public PretendPolicy(String name, String[] ipFilter, PretendServerInterface pretendServer, int timeToLiveBySecond, int priority)
-	{
-		this.name = name;
-		this.ipFilter = ipFilter;
-		this.pretendServer = pretendServer;
-		this.timeToLiveBySecond = timeToLiveBySecond;
-		this.priority = priority;
-	}
-
 	public PretendPolicy(String name, String[] ipFilter, PretendServerInterface pretendServer, int priority)
 	{
 		this.name = name;
@@ -45,11 +37,11 @@ public class PretendPolicy implements Comparable<PretendPolicy>
 
 	public PretendPolicy(String name, String[] ipFilter, PretendServerInterface pretendServer)
 	{
-
 		this.name = name;
 		this.ipFilter = ipFilter;
 		this.pretendServer = pretendServer;
 	}
+
 
 	@Override
 	public int compareTo(PretendPolicy o)

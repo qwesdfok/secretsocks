@@ -19,7 +19,8 @@ public class StreamTest
 		{
 			Socket socket = new Socket("127.0.0.1", 6666);
 			CipherByteStream stream = new CipherByteStream(socket, new AESBlock128Cipher("qwesdfok".getBytes()), new XORByteCipher("qwesdfok".getBytes()), 1024);
-			stream.write("1234567890123456789".getBytes());
+			stream.write("12345".getBytes());
+			stream.flush();
 			stream.write("1234567890123456789".getBytes());
 			stream.flush();
 			stream.close();
@@ -36,11 +37,13 @@ public class StreamTest
 		{
 			ServerSocket serverSocket = new ServerSocket(6666,0, InetAddress.getByName("0.0.0.0"));
 			Socket socket = serverSocket.accept();
-			CipherByteStream stream = new CipherByteStream(socket, new AESBlock128Cipher("qwesdfok".getBytes()), new XORByteCipher("qwesdfok".getBytes()), 64);
+			CipherByteStream stream = new CipherByteStream(socket, new AESBlock128Cipher("qwesdfok".getBytes()), new XORByteCipher("qwesdfok".getBytes()), 1024);
+			byte[] look = stream.look();
 			byte[] data = stream.read();
 			while (data != null)
 			{
 				System.out.println(new String(data));
+				look = stream.look();
 				data = stream.read();
 			}
 			stream.close();

@@ -120,6 +120,24 @@ public class CipherByteStream implements CipherByteStreamInterface
 	}
 
 	@Override
+	public byte[] look() throws IOException
+	{
+		synchronized (inputStream)
+		{
+			if (readLength == 0)
+			{
+				int length = inputStream.read(readBuffer, readLength, readBuffer.length - readLength);
+				if (length == -1)
+					return null;
+				readLength += length;
+			}
+			byte[] lookBuffer = new byte[readLength];
+			System.arraycopy(readBuffer, 0, lookBuffer, 0, lookBuffer.length);
+			return lookBuffer;
+		}
+	}
+
+	@Override
 	public byte[] read() throws IOException, GeneralSecurityException
 	{
 		synchronized (inputStream)
@@ -216,5 +234,11 @@ public class CipherByteStream implements CipherByteStreamInterface
 	public void close() throws IOException
 	{
 		socket.close();
+	}
+
+	@Override
+	public boolean isClosed()
+	{
+		return socket.isClosed();
 	}
 }
