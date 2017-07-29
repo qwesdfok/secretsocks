@@ -5,5 +5,9 @@
 
 详细情况请见<a href="https://github.com/qwesdfok/secretsocks/wiki">WiKi</a>
 
-其他库：
-<a href="https://github.com/CodeStory/fluent-http">fluent-http</a>
+<div>其他库<div>
+<ul>
+<li><a href="https://github.com/CodeStory/fluent-http">fluent-http</a></li>
+<li><a href="http://hc.apache.org/httpclient-3.x/">httpClient</a>
+<li><a href="http://testng.org/doc/">testNG</a>
+</ul>
