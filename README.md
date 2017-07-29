@@ -4,3 +4,6 @@
 因此，若将通讯工具的信道进行一定的伪装，则会很大程度上干扰二五仔的工作，并且若能提供类似于数据防火墙的功能，也是很吼的。
 
 详细情况请见<a href="https://github.com/qwesdfok/secretsocks/wiki">WiKi</a>
+
+其他库：
+<a href="https://github.com/CodeStory/fluent-http">fluent-http</a>
