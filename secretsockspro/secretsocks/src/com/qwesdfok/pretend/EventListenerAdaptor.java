@@ -2,6 +2,9 @@ package com.qwesdfok.pretend;
 
 import java.net.InetAddress;
 
+/**
+ * 可以让用户重写某一个监听器而不需要实现接口中的其他方法。
+ */
 public class EventListenerAdaptor implements EventListenerInterface
 {
 	@Override

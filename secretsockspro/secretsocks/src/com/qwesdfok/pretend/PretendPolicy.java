@@ -2,16 +2,16 @@ package com.qwesdfok.pretend;
 
 import java.util.Comparator;
 
+/**
+ * 该类通过priority来进行唯一性的标识。ipAddress为过滤的具体IP，不能用通配符、正则表达式。ipFilter为描述要被过滤IP的正则表达式。
+ * 一旦一个IP被过滤，则会交给相应的pretendServer进行处理。
+ * priority为优先级，-1时PolicyManager会自动排在队列最后。越低表示优先级越高。
+ * enabled表示是否启用该伪装策略。
+ * TTLBySecond表示策略生存的时间，按秒计算。
+ * 注意：修改优先级请通过{@link PolicyManager#configPriority(String, int)}修改。
+ */
 public class PretendPolicy implements Comparable<PretendPolicy>
 {
-	public String name = "";
-	public String[] ipAddress;
-	public String[] ipFilter;
-	public PretendServerInterface pretendServer;
-	public boolean enabled = true;
-	public int timeToLiveBySecond = -1;
-	public int priority = -1;
-
 	public static Comparator<PretendPolicy> prioriTyComparator = new Comparator<PretendPolicy>()
 	{
 		@Override
@@ -22,6 +22,13 @@ public class PretendPolicy implements Comparable<PretendPolicy>
 			return Integer.compare(o1.priority, o2.priority);
 		}
 	};
+	public String name = "";
+	public String[] ipAddress;
+	public String[] ipFilter;
+	public PretendServerInterface pretendServer;
+	public boolean enabled = true;
+	public int timeToLiveBySecond = -1;
+	public int priority = -1;
 
 	public PretendPolicy()
 	{
@@ -50,6 +57,6 @@ public class PretendPolicy implements Comparable<PretendPolicy>
 			return 0;
 		if (o == null)
 			throw new NullPointerException();
-		return this.name.compareTo(o.name);
+		return prioriTyComparator.compare(this, o);
 	}
 }

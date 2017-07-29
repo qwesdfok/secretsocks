@@ -7,6 +7,9 @@ import net.codestory.http.annotations.Post;
 import net.codestory.http.annotations.Prefix;
 import net.codestory.http.payload.Payload;
 
+/**
+ * 默认的Web服务的页面，有两个页面，/与/login。
+ */
 @Prefix("/")
 public class DefaultWebPage
 {

@@ -4,6 +4,9 @@ import java.net.Socket;
 
 public interface PretendServerInterface
 {
+	/**
+	 * 若将this注册到PolicyManager中，需要保证线程安全。
+	 */
 	void startServer();
 
 	void stopServer();

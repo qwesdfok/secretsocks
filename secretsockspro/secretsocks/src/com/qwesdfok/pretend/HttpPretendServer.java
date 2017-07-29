@@ -11,9 +11,9 @@ import java.net.Socket;
 public class HttpPretendServer implements PretendServerInterface
 {
 	protected final int listenPort;
+	private final Object lock = new Object();
 	protected volatile boolean webServerStarted = false;
 	protected WebServer webServer;
-	private final Object lock = new Object();
 
 	public HttpPretendServer()
 	{
@@ -46,7 +46,7 @@ public class HttpPretendServer implements PretendServerInterface
 	@Override
 	public void stopServer()
 	{
-		if(webServer!=null)
+		if (webServer != null)
 		{
 			webServer.stop();
 		}

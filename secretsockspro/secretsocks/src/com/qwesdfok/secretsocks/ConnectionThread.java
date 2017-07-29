@@ -23,85 +23,7 @@ public class ConnectionThread extends Thread
 	private static final int buffer_size = 1024;
 	private static int thread_count = 0;
 	private static int receive_thread_count = 0;
-
-	private class ReceiveDataThread extends Thread
-	{
-		private final int receiveThreadId;
-
-		public ReceiveDataThread()
-		{
-			super("ReceiveThread_" + receive_thread_count);
-			receiveThreadId = receive_thread_count;
-			receive_thread_count++;
-		}
-
-		@Override
-		public void run()
-		{
-			try
-			{
-				byte[] buffer = new byte[buffer_size];
-				int length = -1;
-				length = outInputStream.read(buffer);
-				while (length != -1)
-				{
-					callBeforeWriteListener(buffer, 0, length);
-					inCipherStream.write(buffer, 0, length);
-					inCipherStream.flush();
-					readByteCount += length;
-					try
-					{
-						length = outInputStream.read(buffer);
-					} catch (SocketException e)
-					{
-						Log.infoLog("ReceiveThreadId:" + receiveThreadId + " s<-w closed");
-						break;
-					}
-				}
-			} catch (Exception e)
-			{
-				QUtils.printException(e);
-			} finally
-			{
-				closeAll();
-			}
-		}
-	}
-
-	private class UDPReceiveDataThread extends Thread
-	{
-		private DatagramSocket datagramSocket;
-
-		public UDPReceiveDataThread(DatagramSocket datagramSocket)
-		{
-			this.datagramSocket = datagramSocket;
-		}
-
-		@Override
-		public void run()
-		{
-			try
-			{
-				byte[] buffer = new byte[buffer_size];
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				while (!datagramSocket.isClosed())
-				{
-					datagramSocket.receive(packet);
-					callBeforeWriteListener(packet.getData(), packet.getOffset(), packet.getLength());
-					readByteCount += packet.getLength();
-					inCipherStream.write(packet.getData(), packet.getOffset(), packet.getLength());
-					inCipherStream.flush();
-				}
-			} catch (Exception e)
-			{
-				QUtils.printException(e);
-			} finally
-			{
-				closeAll();
-			}
-		}
-	}
-
+	private final int threadId;
 	private Socket inSocket;
 	private ReceiveDataThread receiveDataThread;
 	private UDPReceiveDataThread udpReceiveDataThread;
@@ -113,9 +35,6 @@ public class ConnectionThread extends Thread
 	private PolicyManager policyManager;
 	private List<PretendListener> pretendListenerList;
 	private long readByteCount, writeByteCount;
-	private final int threadId;
-
-
 	public ConnectionThread(CipherByteStreamInterface cipherByteStream, List<PretendListener> pretendListeners, PolicyManager policyManager)
 	{
 		super("ServerThread_" + thread_count);
@@ -336,7 +255,6 @@ public class ConnectionThread extends Thread
 		outInputStream = new BufferedInputStream(outSocket.getInputStream());
 		outOutputStream = new BufferedOutputStream(outSocket.getOutputStream());
 		//转发外界数据
-		Log.infoLog("ThreadId:" + threadId + " Start forward by ");
 		receiveDataThread = new ReceiveDataThread();
 		receiveDataThread.start();
 		//转发客户端数据
@@ -464,6 +382,97 @@ public class ConnectionThread extends Thread
 				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_READ, policyManager, data, offset, length);
 				throw new PretendException("Pretend after read:" + inSocket.getRemoteSocketAddress().toString());
+			}
+		}
+	}
+
+	/**
+	 * 与外界的数据接收线程
+	 */
+	private class ReceiveDataThread extends Thread
+	{
+		private final int receiveThreadId;
+
+		public ReceiveDataThread()
+		{
+			super("ReceiveThread_" + receive_thread_count);
+			receiveThreadId = receive_thread_count;
+			receive_thread_count++;
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				byte[] buffer = new byte[buffer_size];
+				int length = -1;
+				length = outInputStream.read(buffer);
+				while (length != -1)
+				{
+					callBeforeWriteListener(buffer, 0, length);
+					inCipherStream.write(buffer, 0, length);
+					inCipherStream.flush();
+					readByteCount += length;
+					try
+					{
+						length = outInputStream.read(buffer);
+					} catch (SocketException e)
+					{
+						Log.infoLog("ReceiveThreadId:" + receiveThreadId + " s<-i closed");
+						break;
+					}
+				}
+			} catch (Exception e)
+			{
+				QUtils.printException(e);
+			} finally
+			{
+				closeAll();
+			}
+		}
+	}
+
+	/**
+	 * UDP接收线程
+	 */
+	private class UDPReceiveDataThread extends Thread
+	{
+		private DatagramSocket datagramSocket;
+
+		public UDPReceiveDataThread(DatagramSocket datagramSocket)
+		{
+			this.datagramSocket = datagramSocket;
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				byte[] buffer = new byte[buffer_size];
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+				while (!datagramSocket.isClosed())
+				{
+					try
+					{
+						datagramSocket.receive(packet);
+					} catch (IOException e)
+					{
+						Log.infoLog("UDPThread s<-i closed");
+						break;
+					}
+					callBeforeWriteListener(packet.getData(), packet.getOffset(), packet.getLength());
+					readByteCount += packet.getLength();
+					inCipherStream.write(packet.getData(), packet.getOffset(), packet.getLength());
+					inCipherStream.flush();
+				}
+			} catch (Exception e)
+			{
+				QUtils.printException(e);
+			} finally
+			{
+				closeAll();
 			}
 		}
 	}

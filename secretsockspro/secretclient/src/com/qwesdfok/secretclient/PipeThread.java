@@ -15,6 +15,9 @@ public class PipeThread extends Thread
 	private static int thread_count = 0;
 	private static int receive_thread_count = 0;
 
+	/**
+	 * 用于接收Server发送的数据，并转发给App
+	 */
 	private class ReceiveDataThread extends Thread
 	{
 		private final int receiveThreadId;
@@ -64,9 +67,13 @@ public class PipeThread extends Thread
 	private OutputStream inOutputStream;
 	private CipherByteStreamInterface outCipherStream;
 	private final int threadId;
-	private int phase = 0;
 
 
+	/**
+	 *
+	 * @param inSocket App的Socket对象
+	 * @param cipherByteStream 实现了某加密算法的IO流
+	 */
 	public PipeThread(Socket inSocket, CipherByteStreamInterface cipherByteStream)
 	{
 		super("clientThread_" + thread_count);
@@ -86,6 +93,8 @@ public class PipeThread extends Thread
 
 			receiveDataThread = new ReceiveDataThread();
 			receiveDataThread.start();
+
+			//接收App的数据并转发给Server
 			byte[] buffer = new byte[buffer_size];
 			int length = inInputStream.read(buffer);
 			while (length != -1)
@@ -93,13 +102,12 @@ public class PipeThread extends Thread
 				//encrypt
 				outCipherStream.write(buffer, 0, length);
 				outCipherStream.flush();
-//				Log.infoLog(threadId + "->c->:" + QUtils.byteToHexStr(buffer, 0, length));
 				try
 				{
 					length = inInputStream.read(buffer);
 				} catch (IOException e)
 				{
-					Log.infoLog("ThreadId:" + threadId + " b->c closed");
+					Log.infoLog("ThreadId:" + threadId + " a->c closed");
 					break;
 				}
 			}

@@ -1,6 +1,5 @@
 package com.qwesdfok.pretend;
 
-import java.net.InetAddress;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
