@@ -24,8 +24,10 @@ public class XORByteCipher implements ByteCipherInterface
 	@Override
 	public void init() throws Exception
 	{
-		encryptRandom = new SecureRandom(encryptKey);
-		decryptRandom = new SecureRandom(decryptKey);
+		encryptRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
+		decryptRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
+		encryptRandom.setSeed(encryptKey);
+		decryptRandom.setSeed(decryptKey);
 	}
 
 	@Override
@@ -38,19 +40,5 @@ public class XORByteCipher implements ByteCipherInterface
 	public byte encrypt(byte plain) throws GeneralSecurityException
 	{
 		return (byte) (plain ^ ((byte) encryptRandom.nextInt()));
-	}
-
-	@Override
-	public ByteCipherInterface clone()
-	{
-		try
-		{
-			XORByteCipher cipher = ((XORByteCipher) super.clone());
-			cipher.init();
-			return cipher;
-		} catch (Exception e)
-		{
-			return null;
-		}
 	}
 }

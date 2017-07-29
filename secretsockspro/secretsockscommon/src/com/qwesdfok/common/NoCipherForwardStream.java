@@ -1,4 +1,4 @@
-package com.qwesdfok.pretend;
+package com.qwesdfok.common;
 
 import com.qwesdfok.utils.QUtils;
 

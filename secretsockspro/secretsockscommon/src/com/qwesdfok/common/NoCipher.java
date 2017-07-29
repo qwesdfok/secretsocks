@@ -1,11 +1,8 @@
 package com.qwesdfok.common;
 
-import com.qwesdfok.common.BlockCipherInterface;
-import com.qwesdfok.common.CipherResult;
+import java.security.GeneralSecurityException;
 
-import java.security.NoSuchAlgorithmException;
-
-public class NoCipher implements BlockCipherInterface
+public class NoCipher implements BlockCipherInterface, ByteCipherInterface
 {
 	@Override
 	public void init() throws Exception
@@ -30,14 +27,14 @@ public class NoCipher implements BlockCipherInterface
 	}
 
 	@Override
-	public BlockCipherInterface clone()
+	public byte decrypt(byte cipher) throws GeneralSecurityException
 	{
-		try
-		{
-			return ((NoCipher) super.clone());
-		} catch (CloneNotSupportedException e)
-		{
-			return null;
-		}
+		return cipher;
+	}
+
+	@Override
+	public byte encrypt(byte plain) throws GeneralSecurityException
+	{
+		return plain;
 	}
 }

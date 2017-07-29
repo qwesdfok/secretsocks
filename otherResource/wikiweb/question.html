@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Question</title>
+</head>
+<body>
+<h1>常见问题</h1>
+<h2>SecureRandom无法找到算法提供商</h2>
+<p>因为使用的是SUN公司（不是Oracle）提供的SHA1PRNG算法的SecureRandom，若找不到该算法，则去AESBlock128Cipher和XORByteCipher类中进行修改。</p>
+</body>
+</html>

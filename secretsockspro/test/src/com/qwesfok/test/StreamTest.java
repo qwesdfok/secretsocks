@@ -13,11 +13,12 @@ import java.net.Socket;
 public class StreamTest
 {
 	@Test
-	public void client()
+	public static void client()
 	{
 		try
 		{
-			Socket socket = new Socket("127.0.0.1", 6666);
+//			Socket socket = new Socket("127.0.0.1", 2020);
+			Socket socket = new Socket("138.197.105.220", 2020);
 			CipherByteStream stream = new CipherByteStream(socket, new AESBlock128Cipher("qwesdfok".getBytes()), new XORByteCipher("qwesdfok".getBytes()), 1024);
 			stream.write("12345".getBytes());
 			stream.flush();
@@ -31,11 +32,11 @@ public class StreamTest
 	}
 
 	@Test
-	public void server()
+	public static void server()
 	{
 		try
 		{
-			ServerSocket serverSocket = new ServerSocket(6666,0, InetAddress.getByName("0.0.0.0"));
+			ServerSocket serverSocket = new ServerSocket(2020,0, InetAddress.getByName("0.0.0.0"));
 			Socket socket = serverSocket.accept();
 			CipherByteStream stream = new CipherByteStream(socket, new AESBlock128Cipher("qwesdfok".getBytes()), new XORByteCipher("qwesdfok".getBytes()), 1024);
 			byte[] look = stream.look();

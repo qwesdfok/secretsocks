@@ -4,6 +4,7 @@ import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
 public class AESBlock128Cipher implements BlockCipherInterface
@@ -24,12 +25,16 @@ public class AESBlock128Cipher implements BlockCipherInterface
 		this.encryptPassword = encryptPassword;
 	}
 
-	public void init() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException
+	public void init() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, NoSuchProviderException
 	{
 		KeyGenerator decryptKeyGenerator = KeyGenerator.getInstance("AES");
 		KeyGenerator encryptKeyGenerator = KeyGenerator.getInstance("AES");
-		decryptKeyGenerator.init(128, new SecureRandom(decryptPassword));
-		encryptKeyGenerator.init(128, new SecureRandom(encryptPassword));
+		SecureRandom encryptRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
+		SecureRandom decryptRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
+		encryptRandom.setSeed(encryptPassword);
+		decryptRandom.setSeed(decryptPassword);
+		encryptKeyGenerator.init(128, encryptRandom);
+		decryptKeyGenerator.init(128, decryptRandom);
 		SecretKeySpec decryptKeySpec = new SecretKeySpec(decryptKeyGenerator.generateKey().getEncoded(), "AES");
 		SecretKeySpec encryptKeySpec = new SecretKeySpec(encryptKeyGenerator.generateKey().getEncoded(), "AES");
 		decryptCipher = Cipher.getInstance("AES");
@@ -48,20 +53,5 @@ public class AESBlock128Cipher implements BlockCipherInterface
 	public byte[] encrypt(byte[] plain, int offset, int length) throws BadPaddingException, IllegalBlockSizeException
 	{
 		return encryptCipher.doFinal(plain, offset, length);
-	}
-
-	@Override
-	public AESBlock128Cipher clone()
-	{
-		try
-		{
-			Object object = super.clone();
-			AESBlock128Cipher cipher = ((AESBlock128Cipher) object);
-			cipher.init();
-			return cipher;
-		} catch (CloneNotSupportedException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e)
-		{
-			return null;
-		}
 	}
 }

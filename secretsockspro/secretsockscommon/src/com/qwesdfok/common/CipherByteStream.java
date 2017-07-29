@@ -144,7 +144,7 @@ public class CipherByteStream implements CipherByteStreamInterface
 		{
 			Header header = new Header();
 			boolean alreadyDecodeHeader = false;
-			if (readLength > 0)
+			if (readLength > 3)
 			{
 				alreadyDecodeHeader = true;
 				if (header.decodeHeader(readBuffer, 0, readLength))
@@ -159,6 +159,13 @@ public class CipherByteStream implements CipherByteStreamInterface
 			if (length == -1)
 				return null;
 			readLength += length;
+			while (readLength <= 3)
+			{
+				length = inputStream.read(readBuffer, readLength, readBuffer.length - readLength);
+				if (length == -1)
+					return null;
+				readLength += length;
+			}
 			boolean complete;
 			if (alreadyDecodeHeader)
 				complete = readLength >= header.headLength + header.dataLength;
@@ -214,7 +221,7 @@ public class CipherByteStream implements CipherByteStreamInterface
 		{
 			if (length == 0)
 				return;
-			byte[] result = blockCipher.encrypt(data, 0, length);
+			byte[] result = blockCipher.encrypt(data, offset, length);
 			Header header = new Header((byte) 0x01, (byte) 0x00, result.length);
 			byte[] head = header.encodeHeader();
 			byte[] buffer = new byte[head.length + result.length];

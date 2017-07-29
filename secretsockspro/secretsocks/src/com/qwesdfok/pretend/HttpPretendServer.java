@@ -1,14 +1,9 @@
 package com.qwesdfok.pretend;
 
+import com.qwesdfok.common.NoCipherForwardStream;
 import com.qwesdfok.utils.Log;
 import com.qwesdfok.utils.QUtils;
-import net.codestory.http.Context;
-import net.codestory.http.Query;
 import net.codestory.http.WebServer;
-import net.codestory.http.annotations.Get;
-import net.codestory.http.annotations.Post;
-import net.codestory.http.annotations.Prefix;
-import net.codestory.http.payload.Payload;
 
 import java.io.IOException;
 import java.net.Socket;

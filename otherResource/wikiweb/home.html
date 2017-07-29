@@ -7,9 +7,11 @@
 <body>
 <h1>SecretSocks</h1>
 <h2>简介</h2>
-<p>
-	本系统主要的目的在于，在两台主机之间通过Socks5协议构建一个安全可靠、具有伪装机制的连接。在公司中信息安全是第一要素，因为新员工的身份HR很难完全掌握，万一其是其他公司派来的二五仔，则一些机密的通讯很可能会被侦听，也有可能对通讯工具进行攻击。因此，若将通讯工具的信道进行一定的伪装，则会很大程度上干扰二五仔的工作，并且若能提供类似于数据防火墙的功能，也是很吼的。</p>
-<a href="https://github.com/qwesdfok/secretsocks/blob/master/otherResource/introduction.docx">Word版</a>
+<p>本系统主要的目的在于，在两台主机之间通过Socks5协议构建一个安全可靠、具有伪装机制的连接。在公司中信息安全是第一要素，因为新员工的身份HR很难完全掌握，万一其是其他公司派来的二五仔，则一些机密的通讯很可能会被侦听，也有可能对通讯工具进行攻击。因此，若将通讯工具的信道进行一定的伪装，则会很大程度上干扰二五仔的工作，并且若能提供类似于数据防火墙的功能，也是很吼的。</p>
+<ul>
+	<li><a href="https://github.com/qwesdfok/secretsocks/wiki/Q&A">Q&A</a></li>
+	<li><a href="https://github.com/qwesdfok/secretsocks/blob/master/otherResource/introduction.docx">Word版</a></li>
+</ul>
 
 <h2>主要的通讯结构</h2>
 <div><img src="https://github.com/qwesdfok/secretsocks/blob/master/otherResource/picture/wiki/BaseStructure.jpg"/></div>
@@ -66,12 +68,16 @@
 
 <p>系统通过一个List&lt;PretendListener&gt;来读取配置信息。</p>
 <p>值得注意的是</p>
-1. 因为该服务是公共的（若放入PolicyManager中），需要保证线程安全。
-2. 暂时没有实现伪装服务器的关闭机制。
-3. 目前添加PretendListener的方式为在MainService中用pretendListenerList.add(…)；
+<ol>
+	<li>因为该服务是公共的（若放入PolicyManager中），需要保证线程安全。</li>
+	<li>暂时没有实现伪装服务器的关闭机制。</li>
+	<li>目前添加PretendListener的方式为在MainService中用pretendListenerList.add(…)；</li>
+</ol>
 
 <h2>其他</h2>
-1. 为了简化伪装服务器的安装配置，该系统使用了<a href="https://github.com/CodeStory/fluent-http">fluent-http</a>作为服务器的配置库。
-2. 目前没有GUI，请用IDE的run/debug的方式来运行，或者请大佬添加GUI。
+<ol>
+	<li>为了简化伪装服务器的安装配置，该系统使用了<a href="https://github.com/CodeStory/fluent-http">fluent-http</a>作为服务器的配置库。</li>
+	<li>目前没有GUI，请用IDE的run/debug的方式来运行，或者请大佬添加GUI。</li>
+</ol>
 </body>
 </html>
