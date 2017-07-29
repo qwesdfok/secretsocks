@@ -383,6 +383,7 @@ public class ConnectionThread extends Thread
 		{
 			if (listener.listener.afterConnect(clientAddress))
 			{
+				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_CONNECT, policyManager, null, 0, 0);
 				throw new PretendException("Pretend after connect:" + clientAddress.toString());
 			}
@@ -395,6 +396,7 @@ public class ConnectionThread extends Thread
 		{
 			if (listener.listener.beforeContact(data, offset, length))
 			{
+				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.BEFORE_CONTACT, policyManager, data, offset, length);
 				throw new PretendException("Pretend before contact:" + inSocket.getRemoteSocketAddress().toString());
 			}
@@ -407,6 +409,7 @@ public class ConnectionThread extends Thread
 		{
 			if (listener.listener.beforeResolve(data, offset, length))
 			{
+				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.BEFORE_RESOLVE, policyManager, data, offset, length);
 				throw new PretendException("Pretend before resolve:" + inSocket.getRemoteSocketAddress().toString());
 			}
@@ -419,6 +422,7 @@ public class ConnectionThread extends Thread
 		{
 			if (listener.listener.afterResolve(requestAddress, cmd, version, resv))
 			{
+				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_RESOLVE, policyManager, data, offset, length);
 				throw new PretendException("Pretend before resolve:" + requestAddress.toString());
 			}
@@ -431,6 +435,7 @@ public class ConnectionThread extends Thread
 		{
 			if (listener.listener.afterFirstRead(data, offset, length))
 			{
+				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_FIRST_READ, policyManager, data, offset, length);
 				throw new PretendException("Pretend after first read:" + inSocket.getRemoteSocketAddress().toString());
 			}
@@ -443,6 +448,7 @@ public class ConnectionThread extends Thread
 		{
 			if (listener.listener.beforeWrite(data, offset, length))
 			{
+				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.BEFORE_WRITE, policyManager, data, offset, length);
 				throw new PretendException("Pretend before write:" + inSocket.getRemoteSocketAddress().toString());
 			}
@@ -455,6 +461,7 @@ public class ConnectionThread extends Thread
 		{
 			if (listener.listener.afterRead(data, offset, length))
 			{
+				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_READ, policyManager, data, offset, length);
 				throw new PretendException("Pretend after read:" + inSocket.getRemoteSocketAddress().toString());
 			}

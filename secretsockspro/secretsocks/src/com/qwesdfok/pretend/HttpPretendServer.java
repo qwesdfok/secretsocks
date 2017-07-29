@@ -15,27 +15,23 @@ import java.net.Socket;
 
 public class HttpPretendServer implements PretendServerInterface
 {
-	private volatile boolean webServerStarted = false;
+	protected final int listenPort;
+	protected volatile boolean webServerStarted = false;
+	protected WebServer webServer;
 	private final Object lock = new Object();
 
-	@Prefix("/")
-	static class PretendServer
+	public HttpPretendServer()
 	{
-		@Get("/")
-		public Payload get()
-		{
-			return new Payload("<h1>Welcome to ChatRoom<h1><div>Only invited users can access the ChatRoom</div><form action='login' method='post'><div><input type=text' name='userName'/></div><div><input type='password' name='password'/></div><div><input type='submit' value='Submit'/></div></form>");
-		}
+		this(2080);
+	}
 
-		@Post("/login")
-		public Payload post(Context context, Query query)
-		{
-			return new Payload("<h1>Permission Denied<h1><div>Invalid userName(" + query.get("userName") + ") or password<div>");
-		}
+	public HttpPretendServer(int listenPort)
+	{
+		this.listenPort = listenPort;
 	}
 
 	@Override
-	public void pretend(Socket socket, EventListenerInterface.TriggerType triggerType, PolicyManager policyManager, byte[] triggerData, int offset, int length)
+	public void startServer()
 	{
 		Log.infoLog("pretend http server");
 		if (!webServerStarted)
@@ -44,19 +40,33 @@ public class HttpPretendServer implements PretendServerInterface
 			{
 				if (!webServerStarted)
 				{
-					WebServer webServer = new WebServer().configure(routes -> routes.add(new PretendServer()));
-					webServer.start(9080);
+					webServer = new WebServer().configure(routes -> routes.add(new DefaultWebPage()));
+					webServer.start(listenPort);
 					webServerStarted = true;
 				}
 			}
 		}
+	}
+
+	@Override
+	public void stopServer()
+	{
+		if(webServer!=null)
+		{
+			webServer.stop();
+		}
+	}
+
+	@Override
+	public void pretend(Socket socket, EventListenerInterface.TriggerType triggerType, PolicyManager policyManager, byte[] triggerData, int offset, int length)
+	{
 		try
 		{
 			PretendPolicy policy = new PretendPolicy();
 			policy.ipAddress = new String[]{socket.getInetAddress().getHostAddress()};
 			policy.pretendServer = this;
 			policyManager.putPolicy(policy);
-			Socket outSocket = new Socket("localhost", 9080);
+			Socket outSocket = new Socket("localhost", listenPort);
 			outSocket.getOutputStream().write(triggerData);
 			outSocket.getOutputStream().flush();
 			NoCipherForwardStream forwardStream = new NoCipherForwardStream(socket, outSocket);

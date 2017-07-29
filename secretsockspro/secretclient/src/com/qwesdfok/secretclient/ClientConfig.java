@@ -2,18 +2,20 @@ package com.qwesdfok.secretclient;
 
 public class ClientConfig
 {
-	public String host;
-	public int port;
+	public int listenPort;
+	public String remoteHost;
+	public int remotePort;
 	public int bufferSize;
 
 	public ClientConfig()
 	{
 	}
 
-	public ClientConfig(String host, int port, int bufferSize)
+	public ClientConfig(int listenPort, String remoteHost, int remotePort, int bufferSize)
 	{
-		this.host = host;
-		this.port = port;
+		this.listenPort = listenPort;
+		this.remoteHost = remoteHost;
+		this.remotePort = remotePort;
 		this.bufferSize = bufferSize;
 	}
 }

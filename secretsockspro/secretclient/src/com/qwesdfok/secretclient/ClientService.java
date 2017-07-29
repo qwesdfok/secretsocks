@@ -11,14 +11,14 @@ public class ClientService
 	public static void main(String[] argv)
 	{
 		KeyInfo keyInfo = new KeyInfo("AES-128", "XOR", "qwesdfok", "qwesdfok");
-		ClientConfig clientConfig = new ClientConfig("127.0.0.1", 9999, 1024 * 1024);
+		ClientConfig clientConfig = new ClientConfig(2010, "127.0.0.1", 2020, 1024 * 1024);
 		try
 		{
-			ServerSocket serverSocket = new ServerSocket(8888);
+			ServerSocket serverSocket = new ServerSocket(clientConfig.listenPort);
 			while (true)
 			{
 				Socket inSocket = serverSocket.accept();
-				Socket outSocket = new Socket(clientConfig.host, clientConfig.port);
+				Socket outSocket = new Socket(clientConfig.remoteHost, clientConfig.remotePort);
 				CipherByteStreamInterface outCipherStream = new CipherByteStream(outSocket,
 						new AESBlock128Cipher(keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
 						new XORByteCipher(keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()), clientConfig.bufferSize);

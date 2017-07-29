@@ -91,7 +91,7 @@ public class PolicyManager
 		PretendPolicy policy = fetchPolicyByIp(ip);
 		if (policy == null)
 			return;
-		policy.pretendServer.pretend(socket, EventListenerInterface.TriggerType.BEFORE_CONTACT, this, null, 0, 0);
+		policy.pretendServer.pretend(socket, EventListenerInterface.TriggerType.POLICY_MANAGER, this, null, 0, 0);
 		throw new PretendException("Policy denied :" + socket.getRemoteSocketAddress());
 	}
 

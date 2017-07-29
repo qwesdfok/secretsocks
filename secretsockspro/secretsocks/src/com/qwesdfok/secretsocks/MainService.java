@@ -17,11 +17,11 @@ public class MainService
 		try
 		{
 			KeyInfo keyInfo = new KeyInfo("AES-128", "XOR", "qwesdfok", "qwesdfok");
-			ServerConfig serverConfig = new ServerConfig(null, 9999, 1024 * 1024);
+			ServerConfig serverConfig = new ServerConfig(null, 2020, 1024 * 1024);
 			InetAddress address = null;
 			if (serverConfig.listenAddress != null)
 				address = InetAddress.getByName(serverConfig.listenAddress);
-			ServerSocket serverSocket = new ServerSocket(serverConfig.port, 0, address);
+			ServerSocket serverSocket = new ServerSocket(serverConfig.listenPort, 0, address);
 			PolicyManager policyManager = new PolicyManager();
 			List<PretendListener> pretendListenerList = new ArrayList<>();
 			pretendListenerList.add(new PretendListener(new HttpListener(), new HttpPretendServer()));
