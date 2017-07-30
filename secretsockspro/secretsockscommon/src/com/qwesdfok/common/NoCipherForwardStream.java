@@ -1,6 +1,6 @@
 package com.qwesdfok.common;
 
-import com.qwesdfok.utils.QUtils;
+import com.qwesdfok.utils.Log;
 
 import java.io.*;
 import java.net.Socket;
@@ -31,8 +31,8 @@ public class NoCipherForwardStream
 				}
 			} catch (Exception e)
 			{
-				QUtils.printException(e);
-			}finally
+				Log.printException(e);
+			} finally
 			{
 				closeAll();
 			}
@@ -83,7 +83,7 @@ public class NoCipherForwardStream
 //			Log.infoLog("Write:" + new String(buffer, 0, length));
 				length = inInputStream.read(buffer);
 			}
-		}finally
+		} finally
 		{
 			closeAll();
 		}
@@ -98,7 +98,7 @@ public class NoCipherForwardStream
 				inSocket.close();
 			} catch (IOException e)
 			{
-				QUtils.printException(e);
+				Log.printException(e);
 			}
 		}
 		if (outSocket != null && !outSocket.isClosed())
@@ -108,7 +108,7 @@ public class NoCipherForwardStream
 				outSocket.close();
 			} catch (IOException e)
 			{
-				QUtils.printException(e);
+				Log.printException(e);
 			}
 		}
 	}

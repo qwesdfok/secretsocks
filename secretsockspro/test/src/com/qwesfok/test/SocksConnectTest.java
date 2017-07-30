@@ -1,6 +1,5 @@
 package com.qwesfok.test;
 
-import com.qwesdfok.pretend.PretendPolicy;
 import net.codestory.http.Context;
 import net.codestory.http.Query;
 import net.codestory.http.WebServer;
@@ -13,7 +12,6 @@ import org.testng.annotations.Test;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.net.Socket;
-import java.util.TreeSet;
 
 public class SocksConnectTest
 {
@@ -22,7 +20,7 @@ public class SocksConnectTest
 	{
 		try
 		{
-			Socket socket = new Socket("127.0.0.1", 1180);
+			Socket socket = new Socket("127.0.0.1", 2020);
 			BufferedInputStream inputStream = new BufferedInputStream(socket.getInputStream());
 			BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
 
@@ -39,23 +37,6 @@ public class SocksConnectTest
 		} catch (Exception e)
 		{
 			e.printStackTrace();
-		}
-	}
-
-	@Test
-	public void test()
-	{
-		TreeSet<PretendPolicy> treeSet = new TreeSet<>();
-		PretendPolicy policy1 = new PretendPolicy();
-		policy1.priority = 1;
-		PretendPolicy policy2 = new PretendPolicy();
-		policy2.priority = 2;
-		treeSet.add(policy2);
-		treeSet.add(policy1);
-		treeSet.remove(policy1);
-		for (PretendPolicy policy : treeSet)
-		{
-			System.out.println(policy.priority);
 		}
 	}
 

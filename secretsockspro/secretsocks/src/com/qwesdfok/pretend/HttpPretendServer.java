@@ -2,7 +2,6 @@ package com.qwesdfok.pretend;
 
 import com.qwesdfok.common.NoCipherForwardStream;
 import com.qwesdfok.utils.Log;
-import com.qwesdfok.utils.QUtils;
 import net.codestory.http.WebServer;
 
 import java.io.IOException;
@@ -68,7 +67,7 @@ public class HttpPretendServer implements PretendServerInterface
 			forwardStream.startForward();
 		} catch (Exception e)
 		{
-			QUtils.printException(e);
+			Log.printException(e);
 		} finally
 		{
 			try

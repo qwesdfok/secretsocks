@@ -1,6 +1,6 @@
 package com.qwesdfok.common;
 
-import com.qwesdfok.utils.QUtils;
+import com.qwesdfok.utils.Log;
 
 import java.io.*;
 import java.net.Socket;
@@ -100,7 +100,7 @@ public class CipherByteStream implements CipherByteStreamInterface
 			byteCipher.init();
 		} catch (Exception e)
 		{
-			QUtils.printException(e);
+			Log.printException(e);
 			throw new SocksException("初始化加密算法失败", e);
 		}
 	}
@@ -111,6 +111,19 @@ public class CipherByteStream implements CipherByteStreamInterface
 		result.result = blockCipher.decrypt(data, header.headLength, header.dataLength);
 		result.usedLength = header.headLength + header.dataLength;
 		return result;
+	}
+
+	private int readFromInputStream(byte[] buffer, int offset, int length) throws IOException
+	{
+		int size = inputStream.read(buffer, offset, length);
+//		Log.traceLog("Read " + size);
+		return size;
+	}
+
+	private void writeToOutputSteam(byte[] data, int offset, int length) throws IOException
+	{
+		outputStream.write(data, offset, length);
+//		Log.traceLog("Write " + length);
 	}
 
 	@Override
@@ -126,7 +139,7 @@ public class CipherByteStream implements CipherByteStreamInterface
 		{
 			if (readLength == 0)
 			{
-				int length = inputStream.read(readBuffer, readLength, readBuffer.length - readLength);
+				int length = readFromInputStream(readBuffer, readLength, readBuffer.length - readLength);
 				if (length == -1)
 					return null;
 				readLength += length;
@@ -155,13 +168,13 @@ public class CipherByteStream implements CipherByteStreamInterface
 					return result.result;
 				}
 			}
-			int length = inputStream.read(readBuffer, readLength, readBuffer.length - readLength);
+			int length = readFromInputStream(readBuffer, readLength, readBuffer.length - readLength);
 			if (length == -1)
 				return null;
 			readLength += length;
 			while (readLength <= 3)
 			{
-				length = inputStream.read(readBuffer, readLength, readBuffer.length - readLength);
+				length = readFromInputStream(readBuffer, readLength, readBuffer.length - readLength);
 				if (length == -1)
 					return null;
 				readLength += length;
@@ -184,7 +197,7 @@ public class CipherByteStream implements CipherByteStreamInterface
 			int totalLength = readLength;
 			while (totalLength < totalBuffer.length)
 			{
-				length = inputStream.read(totalBuffer, totalLength, totalBuffer.length - totalLength);
+				length = readFromInputStream(totalBuffer, totalLength, totalBuffer.length - totalLength);
 				if (length == -1)
 					return null;
 				totalLength += length;
@@ -227,7 +240,7 @@ public class CipherByteStream implements CipherByteStreamInterface
 			byte[] buffer = new byte[head.length + result.length];
 			System.arraycopy(head, 0, buffer, 0, head.length);
 			System.arraycopy(result, 0, buffer, head.length, result.length);
-			outputStream.write(buffer);
+			writeToOutputSteam(buffer, 0, buffer.length);
 		}
 	}
 

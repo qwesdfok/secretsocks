@@ -7,6 +7,7 @@ import java.util.Calendar;
  */
 public class Log
 {
+	public static boolean totalTrace = true;
 	private static int logSetting = 0xffffffff;
 	public static final int TRACE_LOG = 0x1;
 	public static final int DEBUG_LOG = 0x2;
@@ -74,12 +75,19 @@ public class Log
 		System.out.print(str);
 	}
 
-	public static void printError(Exception e)
+	public static void printException(Exception e)
 	{
-		Log.errorLog(e.getClass().getName() + e.getLocalizedMessage());
-		e.printStackTrace();
-		if (e.getCause() != null)
-			Log.errorLog("Cause" + e.getCause().getClass().getName() + e.getCause().getLocalizedMessage());
+		if (totalTrace)
+		{
+			e.printStackTrace();
+		} else
+		{
+			Log.errorLog(e.getClass().getSimpleName() + ":" + e.getLocalizedMessage());
+			StackTraceElement element = e.getStackTrace()[0];
+			Log.errorLog(element.getFileName() + "!" + element.getMethodName() + ":" + element.getLineNumber());
+			if (e.getCause() != null)
+				printException(e.getCause());
+		}
 	}
 
 	public static void enableLog(int logIndex)
@@ -90,5 +98,17 @@ public class Log
 	public static void disableLog(int logIndex)
 	{
 		logSetting &= ~logIndex;
+	}
+
+	private static void printException(Throwable e)
+	{
+		Log.errorLog(e.getClass().getSimpleName() + ":" + e.getLocalizedMessage());
+		if (e.getStackTrace().length > 0)
+		{
+			StackTraceElement element = e.getStackTrace()[0];
+			Log.errorLog(element.getFileName() + "!" + element.getMethodName() + ":" + element.getLineNumber());
+		}
+		if (e.getCause() != null)
+			printException(e.getCause());
 	}
 }

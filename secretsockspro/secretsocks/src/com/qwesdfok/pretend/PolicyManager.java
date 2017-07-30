@@ -224,6 +224,11 @@ public class PolicyManager
 		}
 	}
 
+	public void shutdown()
+	{
+		timerCountThread.interrupt();
+	}
+
 	private PretendPolicy fetchPolicyByIp(String ip)
 	{
 		readWriteLock.readLock().lock();

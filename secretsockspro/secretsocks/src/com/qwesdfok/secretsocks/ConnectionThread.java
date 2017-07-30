@@ -8,7 +8,6 @@ import com.qwesdfok.pretend.PolicyManager;
 import com.qwesdfok.pretend.PretendException;
 import com.qwesdfok.pretend.PretendListener;
 import com.qwesdfok.utils.Log;
-import com.qwesdfok.utils.QUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -17,13 +16,101 @@ import java.net.*;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConnectionThread extends Thread
 {
-	private static final int buffer_size = 1024;
-	private static int thread_count = 0;
-	private static int receive_thread_count = 0;
-	private final int threadId;
+	private static final int buffer_size = 10 * 1024;
+	private static AtomicInteger thread_count = new AtomicInteger(0);
+	private static AtomicInteger receive_thread_count = new AtomicInteger(0);
+
+	/**
+	 * 与外界的数据接收线程
+	 */
+	private class ReceiveDataThread extends Thread
+	{
+		public ReceiveDataThread()
+		{
+			super("ReceiveThread_" + receive_thread_count.getAndIncrement());
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				byte[] buffer = new byte[buffer_size];
+				int length = outInputStream.read(buffer);
+				while (length != -1)
+				{
+					callBeforeWriteListener(buffer, 0, length);
+					inCipherStream.write(buffer, 0, length);
+					inCipherStream.flush();
+					readByteCount += length;
+					try
+					{
+						length = outInputStream.read(buffer);
+					} catch (SocketException e)
+					{
+						Log.infoLog(Thread.currentThread().getName() + " s<-i closed");
+						break;
+					}
+				}
+			} catch (Exception e)
+			{
+				Log.printException(e);
+			} finally
+			{
+				closeAll();
+			}
+		}
+	}
+
+	/**
+	 * UDP接收线程
+	 */
+	private class UDPReceiveDataThread extends Thread
+	{
+		private DatagramSocket datagramSocket;
+
+		public UDPReceiveDataThread(DatagramSocket datagramSocket)
+		{
+			super("UDPReceiveThread_" + receive_thread_count.getAndIncrement());
+			this.datagramSocket = datagramSocket;
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				byte[] buffer = new byte[buffer_size];
+				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+				while (!datagramSocket.isClosed())
+				{
+					try
+					{
+						datagramSocket.receive(packet);
+					} catch (IOException e)
+					{
+						Log.infoLog(Thread.currentThread().getName() + " s<-i closed");
+						break;
+					}
+					callBeforeWriteListener(packet.getData(), packet.getOffset(), packet.getLength());
+					readByteCount += packet.getLength();
+					inCipherStream.write(packet.getData(), packet.getOffset(), packet.getLength());
+					inCipherStream.flush();
+				}
+			} catch (Exception e)
+			{
+				Log.printException(e);
+			} finally
+			{
+				closeAll();
+			}
+		}
+	}
+
 	private Socket inSocket;
 	private ReceiveDataThread receiveDataThread;
 	private UDPReceiveDataThread udpReceiveDataThread;
@@ -35,11 +122,10 @@ public class ConnectionThread extends Thread
 	private PolicyManager policyManager;
 	private List<PretendListener> pretendListenerList;
 	private long readByteCount, writeByteCount;
+
 	public ConnectionThread(CipherByteStreamInterface cipherByteStream, List<PretendListener> pretendListeners, PolicyManager policyManager)
 	{
-		super("ServerThread_" + thread_count);
-		threadId = thread_count;
-		thread_count++;
+		super("ServerThread_" + thread_count.getAndIncrement());
 		this.inSocket = cipherByteStream.getSocket();
 		this.inCipherStream = cipherByteStream;
 		this.policyManager = policyManager;
@@ -89,7 +175,7 @@ public class ConnectionThread extends Thread
 			else
 				throw new SocksException("不支持的ATYP字段");
 			int port = (Byte.toUnsignedInt(data[data.length - 2]) << 8) + Byte.toUnsignedInt(data[data.length - 1]);
-			Log.infoLog("ThreadId:" + threadId + " AType:" + atyp + " Host:" + addr + ":" + port);
+			Log.infoLog(Thread.currentThread().getName() + " AType:" + atyp + " Host:" + addr + ":" + port);
 			callAfterResolveListener(addr, cmd, version, resv, data, 0, data.length);
 			//解析请求类型
 			if (cmd == 0x1)
@@ -107,24 +193,24 @@ public class ConnectionThread extends Thread
 			{
 				throw new SocksException("不支持的连接请求类型");
 			}
-			Log.infoLog(inSocket.getRemoteSocketAddress().toString() + " closed");
+			Log.infoLog(Thread.currentThread().getName() + " " + inSocket.getRemoteSocketAddress().toString() + " closed");
 		} catch (IgnoreCloseException e)
 		{
-			Log.infoLog("ThreadId:" + threadId + " c->s closed");
+			Log.infoLog(Thread.currentThread().getName() + " c->s closed");
 		} catch (PretendException e)
 		{
 			Log.infoLog(e.getLocalizedMessage());
 		} catch (Exception e)
 		{
-			Log.errorLog("ThreadId:" + threadId + " ReadByte: " + readByteCount + ", writeByte: " + writeByteCount);
-			QUtils.printException(e);
+			Log.errorLog(Thread.currentThread().getName() + " ReadByte: " + readByteCount + ", writeByte: " + writeByteCount);
+			Log.printException(e);
 		} finally
 		{
 			closeAll();
 		}
 	}
 
-	private void closeAll()
+	public void closeAll()
 	{
 		if (inSocket != null && !inSocket.isClosed())
 		{
@@ -133,7 +219,7 @@ public class ConnectionThread extends Thread
 				inSocket.close();
 			} catch (IOException e)
 			{
-				QUtils.printException(e);
+				Log.printException(e);
 			}
 		}
 		if (inCipherStream != null && !inCipherStream.isClosed())
@@ -143,7 +229,7 @@ public class ConnectionThread extends Thread
 				inCipherStream.close();
 			} catch (Exception e)
 			{
-				QUtils.printException(e);
+				Log.printException(e);
 			}
 		}
 		if (datagramSocket != null && !datagramSocket.isClosed())
@@ -157,7 +243,7 @@ public class ConnectionThread extends Thread
 				outSocket.close();
 			} catch (Exception e)
 			{
-				QUtils.printException(e);
+				Log.printException(e);
 			}
 		}
 	}
@@ -382,97 +468,6 @@ public class ConnectionThread extends Thread
 				listener.pretendServer.startServer();
 				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_READ, policyManager, data, offset, length);
 				throw new PretendException("Pretend after read:" + inSocket.getRemoteSocketAddress().toString());
-			}
-		}
-	}
-
-	/**
-	 * 与外界的数据接收线程
-	 */
-	private class ReceiveDataThread extends Thread
-	{
-		private final int receiveThreadId;
-
-		public ReceiveDataThread()
-		{
-			super("ReceiveThread_" + receive_thread_count);
-			receiveThreadId = receive_thread_count;
-			receive_thread_count++;
-		}
-
-		@Override
-		public void run()
-		{
-			try
-			{
-				byte[] buffer = new byte[buffer_size];
-				int length = -1;
-				length = outInputStream.read(buffer);
-				while (length != -1)
-				{
-					callBeforeWriteListener(buffer, 0, length);
-					inCipherStream.write(buffer, 0, length);
-					inCipherStream.flush();
-					readByteCount += length;
-					try
-					{
-						length = outInputStream.read(buffer);
-					} catch (SocketException e)
-					{
-						Log.infoLog("ReceiveThreadId:" + receiveThreadId + " s<-i closed");
-						break;
-					}
-				}
-			} catch (Exception e)
-			{
-				QUtils.printException(e);
-			} finally
-			{
-				closeAll();
-			}
-		}
-	}
-
-	/**
-	 * UDP接收线程
-	 */
-	private class UDPReceiveDataThread extends Thread
-	{
-		private DatagramSocket datagramSocket;
-
-		public UDPReceiveDataThread(DatagramSocket datagramSocket)
-		{
-			this.datagramSocket = datagramSocket;
-		}
-
-		@Override
-		public void run()
-		{
-			try
-			{
-				byte[] buffer = new byte[buffer_size];
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				while (!datagramSocket.isClosed())
-				{
-					try
-					{
-						datagramSocket.receive(packet);
-					} catch (IOException e)
-					{
-						Log.infoLog("UDPThread s<-i closed");
-						break;
-					}
-					callBeforeWriteListener(packet.getData(), packet.getOffset(), packet.getLength());
-					readByteCount += packet.getLength();
-					inCipherStream.write(packet.getData(), packet.getOffset(), packet.getLength());
-					inCipherStream.flush();
-				}
-			} catch (Exception e)
-			{
-				QUtils.printException(e);
-			} finally
-			{
-				closeAll();
 			}
 		}
 	}

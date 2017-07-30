@@ -1,14 +1,16 @@
-package com.qwesdfok.secretclient;
+package com.qwesdfok.main;
 
 import com.qwesdfok.common.*;
-import com.qwesdfok.utils.QUtils;
+import com.qwesdfok.secretclient.ClientConfig;
+import com.qwesdfok.secretclient.PipeThread;
+import com.qwesdfok.utils.Log;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClientService
+public class MainClient
 {
-	public static void main(String[] argv)
+	public static void main(String[]argv)
 	{
 		KeyInfo keyInfo = new KeyInfo("AES-128", "XOR", "qwesdfok", "qwesdfok");
 		ClientConfig clientConfig = new ClientConfig(2010, "127.0.0.1", 2020, 1024 * 1024);
@@ -27,7 +29,7 @@ public class ClientService
 			}
 		} catch (Exception e)
 		{
-			QUtils.printException(e);
+			Log.printException(e);
 		}
 	}
 }

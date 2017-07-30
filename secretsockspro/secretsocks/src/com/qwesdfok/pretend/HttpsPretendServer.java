@@ -1,7 +1,6 @@
 package com.qwesdfok.pretend;
 
 import com.qwesdfok.utils.Log;
-import com.qwesdfok.utils.QUtils;
 import net.codestory.http.WebServer;
 
 import java.net.URL;
@@ -40,7 +39,7 @@ public class HttpsPretendServer extends HttpPretendServer
 						webServerStarted = true;
 					} catch (Exception e)
 					{
-						QUtils.printException(e);
+						Log.printException(e);
 					}
 				}
 			}
