@@ -8,5 +8,9 @@
 <h1>常见问题</h1>
 <h2>SecureRandom无法找到算法提供商</h2>
 <p>因为使用的是SUN公司（不是Oracle）提供的SHA1PRNG算法的SecureRandom，若找不到该算法，则去AESBlock128Cipher和XORByteCipher类中进行修改。</p>
+<h2>Fluent-http</h2>
+<p>fluent-http作为伪装所用的Web的轻量级服务器，不建议删除。若想要调试而不想添加该功能，可以修改HttpPretendServer.java和HttpsPretendServer.java</p>
+<p>为了方便使用，在<a href="https://github.com/qwesdfok/secretsocks/releases">Release</a>中可以下载到打包好的Jar库文件（包括依赖）</p>
+<p>该库的具体使用方式请去<a href="https://github.com/CodeStory/fluent-http">GitHub-fluent-http</a>中查看</p>
 </body>
 </html>

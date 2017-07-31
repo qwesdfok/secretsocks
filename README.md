@@ -10,7 +10,8 @@
 </ul>
 <div>所需的其他库<div>
 <ul>
-<li><a href="https://github.com/CodeStory/fluent-http">fluent-http</a></li>
-<li><a href="http://hc.apache.org/httpclient-3.x/">httpClient</a>
-<li><a href="http://testng.org/doc/">testNG</a>(仅测试工程需要)
+<li><a href="https://github.com/CodeStory/fluent-http">fluent-http</a>(仅服务器需要，也可<a href="https://github.com/qwesdfok/secretsocks/wiki/Q&A">删除</a>)</li>
+<li><a href="http://hc.apache.org/httpclient-3.x/">httpClient</a>(仅服务器需要)</li>
+<li><a href="http://testng.org/doc/">testNG</a>(仅测试工程需要)</li>
+<li><a href="http://www.jdom.org/">JDom</a>(仅客户端需要)</li>
 </ul>
