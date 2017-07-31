@@ -5,6 +5,16 @@ public class CipherManager
 	public static final String BLOCK_AES_128 = "AES-128";
 	public static final String BYTE_XOR = "XOR";
 
+	public static String[] getSupportBlockCipherType()
+	{
+		return new String[]{BLOCK_AES_128};
+	}
+
+	public static String[] getSupportByteCipherType()
+	{
+		return new String[]{BYTE_XOR};
+	}
+
 	public static BlockCipherInterface getBlockInstance(String blockCipherType, byte[] readKey, byte[] writeKey)
 	{
 		if (BLOCK_AES_128.equalsIgnoreCase(blockCipherType))

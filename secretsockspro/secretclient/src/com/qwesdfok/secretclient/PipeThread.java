@@ -115,7 +115,7 @@ public class PipeThread extends Thread
 		}
 	}
 
-	private void closeAll()
+	public void closeAll()
 	{
 		if (inSocket != null && !inSocket.isClosed())
 		{

@@ -1,4 +1,4 @@
-package com.qwesdfok.main;
+package com.qwesdfok.servermain;
 
 
 import com.qwesdfok.utils.Log;

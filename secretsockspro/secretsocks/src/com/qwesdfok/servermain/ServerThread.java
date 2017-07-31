@@ -1,4 +1,4 @@
-package com.qwesdfok.main;
+package com.qwesdfok.servermain;
 
 
 import com.qwesdfok.common.CipherByteStream;
@@ -63,8 +63,6 @@ public class ServerThread extends Thread
 	private KeyInfo keyInfo;
 	private ServerConfig serverConfig;
 	private CleanThread cleanThread;
-	private String blockCipherType;
-	private String byteCipherType;
 
 	public ServerThread()
 	{
@@ -75,7 +73,7 @@ public class ServerThread extends Thread
 
 	public void config(CommandReader.CommandResult result)
 	{
-		this.keyInfo = new KeyInfo(null, null, result.readKey, result.writeKey);
+		this.keyInfo = new KeyInfo(result.blockCipherType, result.byteCipherType, result.readKey, result.writeKey);
 		this.serverConfig = new ServerConfig(result.serverHost, result.serverPort, result.bufferSize);
 		if (serverConfig.listenAddress == null)
 			serverConfig.listenAddress = "0.0.0.0";
@@ -84,8 +82,6 @@ public class ServerThread extends Thread
 		this.pretendListenerList = new ArrayList<>();
 		pretendListenerList.add(new PretendListener(new HttpListener(), new HttpPretendServer()));
 		pretendListenerList.add(new PretendListener(new HttpsListener(), new HttpsPretendServer()));
-		blockCipherType = result.blockCipherType;
-		byteCipherType = result.byteCipherType;
 	}
 
 	@Override
@@ -110,23 +106,34 @@ public class ServerThread extends Thread
 				} catch (SocketTimeoutException e)
 				{
 					//需要关闭Server线程
-					if (Thread.currentThread().isInterrupted())
+					if (Thread.interrupted())
 					{
 						policyManager.shutdown();
 						cleanThread.interrupt();
-						cleanThread.join();
-						//join之后只有该线程可能更新processThreadList，不需要同步
-						Iterator<ConnectionThread> iterator = processThreadList.iterator();
-						while (iterator.hasNext())
+						try
 						{
-							ConnectionThread thread = iterator.next();
+							serverSocket.close();
+						} catch (IOException e1)
+						{
+							//ignore
+						}
+						try
+						{
+							cleanThread.join(100);
+						} catch (InterruptedException e1)
+						{
+							//ignore
+						}
+						//join之后只有该线程可能更新processThreadList，不需要同步
+						for (ConnectionThread thread : processThreadList)
+						{
 							if (thread.isAlive())
 							{
 								thread.interrupt();
 								thread.closeAll();
-								iterator.remove();
 							}
 						}
+						processThreadList.clear();
 						break;
 					}
 					continue;
@@ -143,15 +150,15 @@ public class ServerThread extends Thread
 					continue;
 				}
 				CipherByteStreamInterface inCipherStream = new CipherByteStream(inSocket,
-						CipherManager.getBlockInstance(blockCipherType, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
-						CipherManager.getByteCipherInterface(byteCipherType, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						CipherManager.getBlockInstance(keyInfo.blockCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						CipherManager.getByteCipherInterface(keyInfo.byteCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
 						serverConfig.bufferSize);
 				ConnectionThread connectionThread = new ConnectionThread(inCipherStream, pretendListenerList, policyManager);
+				connectionThread.start();
 				synchronized (processThreadList)
 				{
 					processThreadList.add(connectionThread);
 				}
-				connectionThread.start();
 			}
 
 		} catch (Exception e)
