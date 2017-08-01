@@ -28,6 +28,14 @@ public class MainServer
 				return;
 			}
 			CommandReader.CommandResult result = CommandReader.startReader(argv);
+			Log.infoLog("host:"+result.serverHost);
+			Log.infoLog("port:"+result.serverPort);
+			Log.infoLog("daemonPort:"+result.daemonPort);
+			Log.infoLog("readKey:"+result.readKey);
+			Log.infoLog("writeKey:"+result.writeKey);
+			Log.infoLog("blockCipher:"+result.blockCipherType);
+			Log.infoLog("byteCipher:"+result.byteCipherType);
+			Log.infoLog("bufferSize:"+result.bufferSize);
 			try
 			{
 				sendCommand(result);
