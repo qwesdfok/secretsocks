@@ -78,10 +78,11 @@ public class ServerThread extends Thread
 		if (serverConfig.listenAddress == null)
 			serverConfig.listenAddress = "0.0.0.0";
 		if (serverConfig.bufferSize <= 0)
-			serverConfig.bufferSize = 1024 * 1024;
+			serverConfig.bufferSize = 512 * 1024;
 		this.pretendListenerList = new ArrayList<>();
 		pretendListenerList.add(new PretendListener(new HttpListener(), new HttpPretendServer()));
 		pretendListenerList.add(new PretendListener(new HttpsListener(), new HttpsPretendServer()));
+		policyManager.addPretendListener(pretendListenerList);
 	}
 
 	@Override
@@ -153,7 +154,7 @@ public class ServerThread extends Thread
 						CipherManager.getBlockInstance(keyInfo.blockCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
 						CipherManager.getByteCipherInterface(keyInfo.byteCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
 						serverConfig.bufferSize);
-				ConnectionThread connectionThread = new ConnectionThread(inCipherStream, pretendListenerList, policyManager);
+				ConnectionThread connectionThread = new ConnectionThread(inCipherStream, policyManager);
 				connectionThread.start();
 				synchronized (processThreadList)
 				{

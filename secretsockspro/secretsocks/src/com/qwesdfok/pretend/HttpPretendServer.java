@@ -10,8 +10,6 @@ import java.net.Socket;
 public class HttpPretendServer implements PretendServerInterface
 {
 	protected final int listenPort;
-	private final Object lock = new Object();
-	protected volatile boolean webServerStarted = false;
 	protected WebServer webServer;
 
 	public HttpPretendServer()
@@ -28,18 +26,8 @@ public class HttpPretendServer implements PretendServerInterface
 	public void startServer()
 	{
 		Log.infoLog("pretend http server");
-		if (!webServerStarted)
-		{
-			synchronized (lock)
-			{
-				if (!webServerStarted)
-				{
-					webServer = new WebServer().configure(routes -> routes.add(new DefaultWebPage()));
-					webServer.start(listenPort);
-					webServerStarted = true;
-				}
-			}
-		}
+		webServer = new WebServer().configure(routes -> routes.add(new DefaultWebPage()));
+		webServer.start(listenPort);
 	}
 
 	@Override
@@ -59,10 +47,12 @@ public class HttpPretendServer implements PretendServerInterface
 			PretendPolicy policy = new PretendPolicy();
 			policy.ipAddress = new String[]{socket.getInetAddress().getHostAddress()};
 			policy.pretendServer = this;
-			policyManager.putPolicy(policy);
 			Socket outSocket = new Socket("localhost", listenPort);
-			outSocket.getOutputStream().write(triggerData);
-			outSocket.getOutputStream().flush();
+			if (triggerData != null)
+			{
+				outSocket.getOutputStream().write(triggerData);
+				outSocket.getOutputStream().flush();
+			}
 			NoCipherForwardStream forwardStream = new NoCipherForwardStream(socket, outSocket);
 			forwardStream.startForward();
 		} catch (Exception e)

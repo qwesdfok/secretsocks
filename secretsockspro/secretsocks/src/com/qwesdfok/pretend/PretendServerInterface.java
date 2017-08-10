@@ -5,7 +5,7 @@ import java.net.Socket;
 public interface PretendServerInterface
 {
 	/**
-	 * 若将this注册到PolicyManager中，需要保证线程安全。
+	 * 若将this注册到PolicyManager中，不需要保证线程安全。若{@link PolicyManager#deletePretendListener(PretendListener)}后再添加，则还会调用上述方法。
 	 */
 	void startServer();
 

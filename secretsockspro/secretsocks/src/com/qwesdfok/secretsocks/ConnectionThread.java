@@ -3,10 +3,8 @@ package com.qwesdfok.secretsocks;
 import com.qwesdfok.common.CipherByteStreamInterface;
 import com.qwesdfok.common.IgnoreCloseException;
 import com.qwesdfok.common.SocksException;
-import com.qwesdfok.pretend.EventListenerInterface;
 import com.qwesdfok.pretend.PolicyManager;
 import com.qwesdfok.pretend.PretendException;
-import com.qwesdfok.pretend.PretendListener;
 import com.qwesdfok.utils.Log;
 
 import java.io.BufferedInputStream;
@@ -43,7 +41,7 @@ public class ConnectionThread extends Thread
 				int length = outInputStream.read(buffer);
 				while (length != -1)
 				{
-					callBeforeWriteListener(buffer, 0, length);
+					policyManager.callBeforeWriteListener(inSocket, buffer, 0, length);
 					inCipherStream.write(buffer, 0, length);
 					inCipherStream.flush();
 					readByteCount += length;
@@ -96,7 +94,7 @@ public class ConnectionThread extends Thread
 						Log.infoLog(Thread.currentThread().getName() + " s<-i closed");
 						break;
 					}
-					callBeforeWriteListener(packet.getData(), packet.getOffset(), packet.getLength());
+					policyManager.callBeforeWriteListener(inSocket, packet.getData(), packet.getOffset(), packet.getLength());
 					readByteCount += packet.getLength();
 					inCipherStream.write(packet.getData(), packet.getOffset(), packet.getLength());
 					inCipherStream.flush();
@@ -120,16 +118,14 @@ public class ConnectionThread extends Thread
 	private BufferedInputStream outInputStream;
 	private BufferedOutputStream outOutputStream;
 	private PolicyManager policyManager;
-	private List<PretendListener> pretendListenerList;
 	private long readByteCount, writeByteCount;
 
-	public ConnectionThread(CipherByteStreamInterface cipherByteStream, List<PretendListener> pretendListeners, PolicyManager policyManager)
+	public ConnectionThread(CipherByteStreamInterface cipherByteStream, PolicyManager policyManager)
 	{
 		super("ServerThread_" + thread_count.getAndIncrement());
 		this.inSocket = cipherByteStream.getSocket();
 		this.inCipherStream = cipherByteStream;
 		this.policyManager = policyManager;
-		this.pretendListenerList = pretendListeners;
 	}
 
 	@Override
@@ -137,10 +133,10 @@ public class ConnectionThread extends Thread
 	{
 		try
 		{
-			callAfterConnectListener(inSocket.getInetAddress());
+			policyManager.callAfterConnectListener(inSocket, inSocket.getInetAddress());
 			//协商验证方式
 			byte[] look = inCipherStream.look();
-			callBeforeContactListener(look, 0, look.length);
+			policyManager.callBeforeContactListener(inSocket, look, 0, look != null ? look.length : 0);
 			byte[] data = inCipherStream.read();
 			if (data.length < 3 || data[0] != 5)
 				throw new SocksException("所接受的请求不是Socks5请求");
@@ -156,7 +152,7 @@ public class ConnectionThread extends Thread
 
 			//接收解析请求
 			look = inCipherStream.look();
-			callBeforeResolveListener(look, 0, look.length);
+			policyManager.callBeforeResolveListener(inSocket, look, 0, look != null ? look.length : 0);
 			data = inCipherStream.read();
 			if (data.length < 6 || data[0] != 5)
 				throw new SocksException("所接受的请求不是Socks5请求");
@@ -176,7 +172,7 @@ public class ConnectionThread extends Thread
 				throw new SocksException("不支持的ATYP字段");
 			int port = (Byte.toUnsignedInt(data[data.length - 2]) << 8) + Byte.toUnsignedInt(data[data.length - 1]);
 			Log.infoLog(Thread.currentThread().getName() + " AType:" + atyp + " Host:" + addr + ":" + port);
-			callAfterResolveListener(addr, cmd, version, resv, data, 0, data.length);
+			policyManager.callAfterResolveListener(inSocket, addr, cmd, version, resv, data, 0, data.length);
 			//解析请求类型
 			if (cmd == 0x1)
 			{
@@ -261,14 +257,14 @@ public class ConnectionThread extends Thread
 		udpReceiveDataThread.start();
 		//转发客户端数据
 		look = inCipherStream.look();
-		callAfterFirstReadListener(look, 0, look.length);
+		policyManager.callAfterFirstReadListener(inSocket, look, 0, look != null ? look.length : 0);
 		data = inCipherStream.read();
 		while (data != null)
 		{
 			DatagramPacket packet = new DatagramPacket(data, 0, data.length, addr, port);
 			datagramSocket.send(packet);
 			look = inCipherStream.look();
-			callAfterReadListener(look, 0, look.length);
+			policyManager.callAfterReadListener(inSocket, look, 0, look != null ? look.length : 0);
 			data = inCipherStream.read();
 		}
 	}
@@ -346,7 +342,7 @@ public class ConnectionThread extends Thread
 		//转发客户端数据
 		byte[] look = inCipherStream.look();
 		if (look != null)
-			callAfterFirstReadListener(look, 0, look.length);
+			policyManager.callAfterFirstReadListener(inSocket, look, 0, look.length);
 		byte[] data = inCipherStream.read();
 		while (data != null)
 		{
@@ -355,7 +351,7 @@ public class ConnectionThread extends Thread
 			writeByteCount += data.length;
 			look = inCipherStream.look();
 			if (look != null)
-				callAfterReadListener(look, 0, look.length);
+				policyManager.callAfterReadListener(inSocket, look, 0, look.length);
 			try
 			{
 				data = inCipherStream.read();
@@ -379,96 +375,5 @@ public class ConnectionThread extends Thread
 					address[14], address[15], portByte[0], portByte[1]};
 		} else
 			return new byte[]{0x05, rep, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	}
-
-	private void callAfterConnectListener(InetAddress clientAddress) throws PretendException
-	{
-		for (PretendListener listener : pretendListenerList)
-		{
-			if (listener.listener.afterConnect(clientAddress))
-			{
-				listener.pretendServer.startServer();
-				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_CONNECT, policyManager, null, 0, 0);
-				throw new PretendException("Pretend after connect:" + clientAddress.toString());
-			}
-		}
-	}
-
-	private void callBeforeContactListener(byte[] data, int offset, int length) throws PretendException
-	{
-		for (PretendListener listener : pretendListenerList)
-		{
-			if (listener.listener.beforeContact(data, offset, length))
-			{
-				listener.pretendServer.startServer();
-				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.BEFORE_CONTACT, policyManager, data, offset, length);
-				throw new PretendException("Pretend before contact:" + inSocket.getRemoteSocketAddress().toString());
-			}
-		}
-	}
-
-	private void callBeforeResolveListener(byte[] data, int offset, int length) throws PretendException
-	{
-		for (PretendListener listener : pretendListenerList)
-		{
-			if (listener.listener.beforeResolve(data, offset, length))
-			{
-				listener.pretendServer.startServer();
-				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.BEFORE_RESOLVE, policyManager, data, offset, length);
-				throw new PretendException("Pretend before resolve:" + inSocket.getRemoteSocketAddress().toString());
-			}
-		}
-	}
-
-	private void callAfterResolveListener(InetAddress requestAddress, byte cmd, byte version, byte resv, byte[] data, int offset, int length) throws PretendException
-	{
-		for (PretendListener listener : pretendListenerList)
-		{
-			if (listener.listener.afterResolve(requestAddress, cmd, version, resv))
-			{
-				listener.pretendServer.startServer();
-				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_RESOLVE, policyManager, data, offset, length);
-				throw new PretendException("Pretend before resolve:" + requestAddress.toString());
-			}
-		}
-	}
-
-	private void callAfterFirstReadListener(byte[] data, int offset, int length) throws PretendException
-	{
-		for (PretendListener listener : pretendListenerList)
-		{
-			if (listener.listener.afterFirstRead(data, offset, length))
-			{
-				listener.pretendServer.startServer();
-				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_FIRST_READ, policyManager, data, offset, length);
-				throw new PretendException("Pretend after first read:" + inSocket.getRemoteSocketAddress().toString());
-			}
-		}
-	}
-
-	private void callBeforeWriteListener(byte[] data, int offset, int length) throws PretendException
-	{
-		for (PretendListener listener : pretendListenerList)
-		{
-			if (listener.listener.beforeWrite(data, offset, length))
-			{
-				listener.pretendServer.startServer();
-				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.BEFORE_WRITE, policyManager, data, offset, length);
-				throw new PretendException("Pretend before write:" + inSocket.getRemoteSocketAddress().toString());
-			}
-		}
-	}
-
-	private void callAfterReadListener(byte[] data, int offset, int length) throws PretendException
-	{
-		for (PretendListener listener : pretendListenerList)
-		{
-			if (listener.listener.afterRead(data, offset, length))
-			{
-				listener.pretendServer.startServer();
-				listener.pretendServer.pretend(inSocket, EventListenerInterface.TriggerType.AFTER_READ, policyManager, data, offset, length);
-				throw new PretendException("Pretend after read:" + inSocket.getRemoteSocketAddress().toString());
-			}
-		}
 	}
 }

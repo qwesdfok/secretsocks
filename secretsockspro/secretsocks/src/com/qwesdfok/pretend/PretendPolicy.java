@@ -1,6 +1,7 @@
 package com.qwesdfok.pretend;
 
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 该类通过priority来进行唯一性的标识。ipAddress为过滤的具体IP，不能用通配符、正则表达式。ipFilter为描述要被过滤IP的正则表达式。
