@@ -16,7 +16,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -151,8 +150,8 @@ public class ServerThread extends Thread
 					continue;
 				}
 				CipherByteStreamInterface inCipherStream = new CipherByteStream(inSocket,
-						CipherManager.getBlockInstance(keyInfo.blockCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
-						CipherManager.getByteCipherInterface(keyInfo.byteCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						CipherManager.getBlockNewInstance(keyInfo.blockCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						CipherManager.getByteCipherNewInstance(keyInfo.byteCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
 						serverConfig.bufferSize);
 				ConnectionThread connectionThread = new ConnectionThread(inCipherStream, policyManager);
 				connectionThread.start();

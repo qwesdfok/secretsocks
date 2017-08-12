@@ -9,15 +9,12 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PolicyManager
 {
-	static AtomicInteger listener_count = new AtomicInteger(0);
-
 	private class TimerCountThread extends Thread
 	{
 		private long last = 0;
@@ -34,17 +31,23 @@ public class PolicyManager
 					long current = System.currentTimeMillis();
 					if (current - last >= 1000)
 					{
+						policyRWLock.readLock().lock();
 						for (PretendPolicy policy : prioritySet)
 						{
 							if (policy.timeToLiveBySecond < 0)
 								continue;
 							policy.timeToLiveBySecond--;
-							if (policy.timeToLiveBySecond == 0)
+							if (policy.timeToLiveBySecond == 0 || policy.timeToLiveBySecond == -1)
 							{
+								policyRWLock.readLock().unlock();
+								policyRWLock.writeLock().lock();
 								prioritySet.remove(policy);
 								policyMap.remove(policy.name);
+								policyRWLock.writeLock().unlock();
+								policyRWLock.readLock().lock();
 							}
 						}
+						policyRWLock.readLock().unlock();
 					}
 				} catch (InterruptedException e)
 				{

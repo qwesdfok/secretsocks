@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Detail</title>
+</head>
+<body>
+<h1>数据处理&伪装启动流程</h1>
+<p>所有的Pretend功能都由PolicyManger进行统一的管理。</p>
+<p>PolicyManger有两个主要的字段：pretendListenerList和policyMap，分别对应Pretend监听器和Pretend策略的集合。</p>
+<p>当一个新的连接请求被发送到服务器时，会经过以下几个步骤：</p>
+<ol>
+	<li>遍历在PolicyManager中的policy，检查address是否能精确匹配请求方的address&检查filter能否正则匹配请求方的address。若匹配成功，则调用policy中的伪装服务，结束服务后直接断开连接。</li>
+	<li>调用PolicyManager中的所有的PretendListener的AfterConnectListener()等多个监听方法，若返回值为true，则调用listener中的伪装服务器，结束后直接断开连接。</li>
+	<li>若监听方法返回值为false，则按照正常流程进行数据的转发、连接的建立。</li>
+</ol>
+<h1>添加新的Policy和PretendListener</h1>
+<p>在PretendServerInterface接口中，pretend()的参数有policyManger对象的引用。伪装服务器可以通过这个引用添加、删除、修改Policy和Listener。</p>
+<p>值得注意的是，Policy的优先级和名字请用policyManger.config*()方法进行修改。</p>
+<p>因为懒，所以暂时没有提供通过外部Jar包和XML配置文件的方式动态配置Listener，有志之士可以帮忙实现（通过Classloader）。</p>
+<h1>加密方式</h1>
+<p>默认的加密方式有2种，一个是Block加密的AES-128加密，另一个是Byte加密的XOR异或加密。</p>
+<p>若要添加新的加密方式，则需要：</p>
+<ol>
+	<li>实现BlockCipherInterface的类和实现了ByteCipherInterfere的类。</li>
+	<li>在CipherManager中进行添加。</li>
+</ol>
+<p>与PolicyListener一样，为实现动态配置</p>
+</body>
+</html>

@@ -112,8 +112,8 @@ public class ListenerThread extends Thread
 				}
 				Socket outSocket = new Socket(clientConfig.remoteHost, clientConfig.remotePort);
 				CipherByteStreamInterface outCipherStream = new CipherByteStream(outSocket,
-						CipherManager.getBlockInstance(keyInfo.blockCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
-						CipherManager.getByteCipherInterface(keyInfo.byteCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						CipherManager.getBlockNewInstance(keyInfo.blockCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
+						CipherManager.getByteCipherNewInstance(keyInfo.byteCipher, keyInfo.readKey.getBytes(), keyInfo.writeKey.getBytes()),
 						clientConfig.bufferSize);
 				PipeThread pipeThread = new PipeThread(inSocket, outCipherStream);
 				synchronized (pipeThreadList)

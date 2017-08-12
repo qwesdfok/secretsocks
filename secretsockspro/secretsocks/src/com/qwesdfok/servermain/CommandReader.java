@@ -1,10 +1,12 @@
 package com.qwesdfok.servermain;
 
+import com.qwesdfok.common.CipherManager;
 import com.qwesdfok.utils.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Created by qwesdfok on 2017/3/6.
@@ -329,5 +331,15 @@ public class CommandReader
 		}
 		result.blockCipherType = argv.get(0);
 		result.byteCipherType = argv.get(1);
+		if (!CipherManager.containsBlockCipherType(result.blockCipherType))
+		{
+			Log.warningLog("只支持以下block加密类型，启动后系统将使用默认的加密类型：");
+			Log.infoLog(Stream.of(CipherManager.getSupportBlockCipherType()).reduce((a, b) -> a + "," + b).orElse("None"));
+		}
+		if (!CipherManager.containsByteCipherType(result.byteCipherType))
+		{
+			Log.warningLog("只支持以下byte加密类型，启动后系统将使用默认的加密类型：");
+			Log.infoLog(Stream.of(CipherManager.getSupportByteCipherType()).reduce((a, b) -> a + "," + b).orElse("None"));
+		}
 	}
 }

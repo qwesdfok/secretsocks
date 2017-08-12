@@ -22,8 +22,6 @@ public class MainServer
 	{
 		try
 		{
-			Log.disableLog(Log.TIME_LOG);
-			Log.disableLog(Log.LABEL_LOG);
 			if (argv.length == 0)
 			{
 				Log.errorLog("请输入--help或-h来获取帮助");
