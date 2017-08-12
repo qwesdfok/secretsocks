@@ -7,11 +7,11 @@
 <ul>
 <li>详细情况请见<a href="https://github.com/qwesdfok/secretsocks/wiki">WiKi</a></li>
 <li>常见问题见<a href="https://github.com/qwesdfok/secretsocks/wiki/Q&A">Q&amp;A</a></li>
+<li>库文件请根据client和server的依赖关系，放到与之对应的相同目录下。下载地址：<a href="https://github.com/qwesdfok/secretsocks/releases/download/1.0.0/jdom.jar">jdom.jar</a>，<a href="https://github.com/qwesdfok/secretsocks/releases/download/1.0.0/fluent-http.jar">fluent-http</a></li>
 </ul>
 <div>所需的其他库<div>
 <ul>
-<li><a href="https://github.com/CodeStory/fluent-http">fluent-http</a>(仅服务器需要，也可<a href="https://github.com/qwesdfok/secretsocks/wiki/Q&A">删除</a>)</li>
-<li><a href="http://hc.apache.org/httpclient-3.x/">httpClient</a>(仅服务器需要)</li>
-<li><a href="http://testng.org/doc/">testNG</a>(仅测试工程需要)</li>
 <li><a href="http://www.jdom.org/">JDom</a>(仅客户端需要)</li>
+<li><a href="https://github.com/CodeStory/fluent-http">fluent-http</a>(仅服务器需要，也可<a href="https://github.com/qwesdfok/secretsocks/wiki/Q&A">删除</a>)</li>
+<li><a href="http://testng.org/doc/">testNG</a>(仅测试工程需要)</li>
 </ul>
